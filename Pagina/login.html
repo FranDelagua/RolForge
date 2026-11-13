@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Iniciar sesión - RolForge</title>
+
+    <link rel="stylesheet" href="../Api/global.css">
+</head>
+
+<body>
+
+    <main class="contenedor-auth">
+
+        <section class="pergamino">
+
+            <!-- ROLLO SUPERIOR -->
+            <img
+                src="img/pergamino.png"
+                class="borde-pergamino borde-arriba"
+                alt=""
+            >
+
+            <!-- CONTENIDO -->
+            <div class="contenido-pergamino">
+
+                <div class="titulo-rollo">
+                    <h1>INICIAR SESIÓN</h1>
+                </div>
+
+                <div class="decoracion">
+                </div>
+
+                <div class="separador"></div>
+
+                <form action="../Api/login.php" method="POST">
+
+                    <div class="campo">
+                        <label for="usuario">Nombre de usuario</label>
+
+                        <input
+                            type="text"
+                            id="usuario"
+                            name="usuario"
+                            required
+                        >
+                    </div>
+
+                    <div class="campo">
+                        <label for="password">Contraseña</label>
+
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            required
+                        >
+                    </div>
+
+                    <button type="submit">
+                        ⚔ Iniciar sesión
+                    </button>
+
+                </form>
+
+                <div class="separador"></div>
+
+                <p class="enlace-login">
+                    ¿No tienes cuenta?
+                    <a href="registro.html">Crear cuenta</a>
+                </p>
+
+            </div>
+
+            <!-- ROLLO INFERIOR -->
+            <img
+                src="img/pergamino.png"
+                class="borde-pergamino borde-abajo"
+                alt=""
+            >
+
+        </section>
+
+    </main>
+
+</body>
+
+</html>

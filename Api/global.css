@@ -1,0 +1,2817 @@
+:root {
+    --wood-dark: #120b07;
+    --wood: #24140b;
+    --wood-light: #422512;
+
+    --leather: #21150f;
+    --leather-light: #332017;
+
+    --gold-dark: #75501f;
+    --gold: #b88a3b;
+    --gold-light: #d8b86a;
+
+    --text: #e7d7ad;
+    --text-muted: #9f8b67;
+
+    --input: #130d09;
+    --input-border: #62441f;
+}
+
+
+/* ==============================
+   BASE
+   ============================== */
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    min-height: 100%;
+}
+
+body {
+    min-height: 100vh;
+
+    color: var(--text);
+
+    font-family: Georgia, "Times New Roman", serif;
+
+    background:
+        radial-gradient(
+            ellipse at center,
+            rgba(110, 65, 30, 0.25),
+            transparent 60%
+        ),
+        repeating-linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0.015) 0px,
+            rgba(255, 255, 255, 0.015) 2px,
+            transparent 2px,
+            transparent 70px
+        ),
+        linear-gradient(
+            135deg,
+            #0b0704,
+            #29170c 30%,
+            #160c07 70%,
+            #080503
+        );
+}
+
+
+/* ==============================
+   LINKS
+   ============================== */
+
+a {
+    color: var(--gold-light);
+    text-decoration: none;
+}
+
+a:hover {
+    color: #f0d28b;
+}
+
+
+/* ==============================
+   TITULOS
+   ============================== */
+
+h1,
+h2,
+h3 {
+    margin: 0;
+
+    color: var(--gold-light);
+
+    text-transform: uppercase;
+
+    letter-spacing: 3px;
+
+    text-shadow:
+        0 2px 3px #000,
+        0 0 15px rgba(184, 138, 59, 0.15);
+}
+
+
+/* ==============================
+   INPUTS
+   ============================== */
+
+input,
+select,
+textarea {
+    width: 100%;
+
+    padding: 13px 14px;
+
+    border: 1px solid var(--input-border);
+
+    border-radius: 3px;
+
+    background:
+        linear-gradient(
+            180deg,
+            #19100b,
+            #0e0906
+        );
+
+    color: var(--text);
+
+    font-family: Georgia, "Times New Roman", serif;
+
+    outline: none;
+
+    box-shadow:
+        inset 0 2px 6px rgba(0, 0, 0, 0.7),
+        0 1px 0 rgba(255, 255, 255, 0.03);
+
+    transition: 0.2s;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: var(--gold);
+
+    box-shadow:
+        0 0 0 1px var(--gold),
+        inset 0 2px 6px rgba(0, 0, 0, 0.7);
+}
+
+input::placeholder {
+    color: #675843;
+}
+
+
+/* ==============================
+   LABELS
+   ============================== */
+
+label {
+    display: block;
+
+    margin-bottom: 7px;
+
+    color: #bda77c;
+
+    font-size: 0.85rem;
+
+    font-weight: bold;
+
+    text-transform: uppercase;
+
+    letter-spacing: 1.5px;
+}
+
+
+/* ==============================
+   BOTONES
+   ============================== */
+
+button {
+    padding: 13px 20px;
+
+    border: 1px solid var(--gold-dark);
+
+    border-radius: 3px;
+
+    background:
+        linear-gradient(
+            180deg,
+            #76521f,
+            #412a11
+        );
+
+    color: #f1dfae;
+
+    font-family: Georgia, "Times New Roman", serif;
+
+    font-weight: bold;
+
+    text-transform: uppercase;
+
+    letter-spacing: 1px;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 4px 10px rgba(0, 0, 0, 0.5),
+        inset 0 1px rgba(255, 255, 255, 0.1);
+
+    transition: 0.2s;
+}
+
+button:hover {
+    border-color: var(--gold-light);
+
+    background:
+        linear-gradient(
+            180deg,
+            #946d30,
+            #593a17
+        );
+
+    transform: translateY(-1px);
+}
+
+
+/* ==============================
+   AUTENTICACIÓN
+   ============================== */
+
+.contenedor-auth {
+    width: min(430px, 90%);
+
+    margin: 0 auto;
+
+    padding: 70px 0;
+}
+
+
+/* ==============================
+   LOGO
+   ============================== */
+
+.contenedor-auth::before {
+    content: "⚔ ROLFORGE ⚔";
+
+    display: block;
+
+    margin-bottom: 35px;
+
+    color: var(--gold-light);
+
+    font-size: 2rem;
+
+    font-weight: bold;
+
+    letter-spacing: 7px;
+
+    text-align: center;
+
+    text-shadow:
+        0 3px 4px #000,
+        0 0 20px rgba(184, 138, 59, 0.15);
+}
+
+
+/* ==============================
+   PERGAMINO
+   ============================== */
+
+.pergamino {
+    position: relative;
+
+    padding: 50px;
+
+    color: #30200f;
+
+    background:
+        radial-gradient(
+            ellipse at 10% 10%,
+            rgba(100, 62, 20, 0.22),
+            transparent 25%
+        ),
+        radial-gradient(
+            ellipse at 90% 90%,
+            rgba(100, 62, 20, 0.20),
+            transparent 25%
+        ),
+    radial-gradient(
+        ellipse at center,
+        rgba(255, 235, 180, 0.45),
+        transparent 70%
+    ),
+    linear-gradient(
+        135deg,
+        #D5A65F,
+        #EFC17F 25%,
+        #E9B86E 55%,
+        #F1C783 80%,
+        #C99750
+    );
+
+    border: 1px solid #80602e;
+
+    box-shadow:
+        0 25px 50px rgba(0, 0, 0, 0.75),
+        0 8px 15px rgba(0, 0, 0, 0.45),
+        inset 0 0 45px rgba(74, 42, 8, 0.25),
+        inset 0 0 8px rgba(54, 31, 8, 0.35);
+}
+
+
+/* ==============================
+   BORDE INTERIOR
+   ============================== */
+
+.pergamino::before {
+    content: "";
+
+    position: absolute;
+
+    inset: 13px;
+
+    border: 1px solid rgba(83, 50, 14, 0.4);
+
+    pointer-events: none;
+
+    box-shadow:
+        inset 0 0 20px rgba(70, 40, 10, 0.15);
+}
+
+
+/* ==============================
+   BORDES ENVEJECIDOS
+   ============================== */
+
+.pergamino::after {
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    pointer-events: none;
+
+    background:
+        radial-gradient(
+            ellipse at 0% 0%,
+            rgba(65, 35, 7, 0.45),
+            transparent 14%
+        ),
+        radial-gradient(
+            ellipse at 100% 0%,
+            rgba(65, 35, 7, 0.40),
+            transparent 14%
+        ),
+        radial-gradient(
+            ellipse at 0% 100%,
+            rgba(65, 35, 7, 0.45),
+            transparent 14%
+        ),
+        radial-gradient(
+            ellipse at 100% 100%,
+            rgba(65, 35, 7, 0.45),
+            transparent 14%
+        ),
+        linear-gradient(
+            to bottom,
+            rgba(70, 38, 8, 0.25),
+            transparent 8%
+        ),
+        linear-gradient(
+            to top,
+            rgba(70, 38, 8, 0.25),
+            transparent 8%
+        );
+
+    opacity: 0.9;
+}
+
+
+/* ==============================
+   CONTENIDO DEL PERGAMINO
+   ============================== */
+
+.pergamino > * {
+    position: relative;
+
+    z-index: 5;
+}
+
+
+/* ==============================
+   TITULOS DEL PERGAMINO
+   ============================== */
+
+.pergamino h1,
+.pergamino h2,
+.pergamino h3 {
+    color: #38230f;
+
+    text-shadow: none;
+
+    letter-spacing: 2px;
+}
+
+
+/* ==============================
+   LABELS DEL PERGAMINO
+   ============================== */
+
+.pergamino label {
+    color: #4a2c13;
+
+    font-weight: bold;
+
+    text-transform: uppercase;
+
+    letter-spacing: 1px;
+}
+
+
+/* ==============================
+   INPUTS DEL PERGAMINO
+   ============================== */
+
+.pergamino input,
+.pergamino select,
+.pergamino textarea {
+    background: rgba(246, 228, 177, 0.35);
+
+    border: none;
+
+    border-bottom: 2px solid #8a6936;
+
+    border-radius: 0;
+
+    color: #30200f;
+
+    box-shadow:
+        inset 0 2px 5px rgba(77, 45, 12, 0.08);
+}
+
+.pergamino input:focus,
+.pergamino select:focus,
+.pergamino textarea:focus {
+    background: rgb(92, 77, 77);
+    
+
+    border-bottom-color: #563510;
+
+    box-shadow:
+        0 2px 0 rgba(86, 53, 16, 0.25);
+}
+
+
+/* ==============================
+   FORMULARIO
+   ============================== */
+
+.campo {
+    margin-bottom: 20px;
+}
+
+
+/* ==============================
+   SEPARADOR
+   ============================== */
+
+.separador {
+    width: 100%;
+
+    height: 1px;
+
+    margin: 25px 0;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            #795523,
+            transparent
+        );
+}
+
+
+/* ==============================
+   BOTÓN DEL FORMULARIO
+   ============================== */
+
+.contenedor-auth button {
+    width: 100%;
+
+    margin-top: 8px;
+}
+
+
+/* ==============================
+   TEXTO INFERIOR
+   ============================== */
+
+.contenedor-auth p {
+    color: var(--text-muted);
+
+    font-size: 0.9rem;
+
+    text-align: center;
+}
+
+
+/* ==============================
+   DECORACIÓN
+   ============================== */
+
+.decoracion {
+    margin-bottom: 15px;
+
+    color: var(--gold);
+
+    font-size: 1.4rem;
+
+    text-align: center;
+
+    letter-spacing: 12px;
+}
+
+
+/* ==============================
+   RESPONSIVE
+   ============================== */
+
+@media (max-width: 600px) {
+
+    .contenedor-auth {
+        width: 92%;
+
+        padding: 40px 0;
+    }
+
+    .pergamino {
+        padding: 30px 25px;
+    }
+
+    .contenedor-auth::before {
+        font-size: 1.4rem;
+
+        letter-spacing: 4px;
+    }
+}
+/* ==============================
+   BORDES DEL PERGAMINO
+   ============================== */
+
+.pergamino {
+    position: relative;
+    overflow: visible;
+}
+
+
+/* ==============================
+   ROLLOS
+   ============================== */
+
+.borde-pergamino {
+    position: absolute;
+
+    /*
+     * El rollo se adapta al ancho
+     * del panel automáticamente.
+     */
+    width: calc(115% + 30px);
+
+    height: 135px;
+
+    left: -45px;
+    top: 93%;
+    object-fit: fill;
+
+    margin: 0;
+
+    pointer-events: none;
+
+    z-index: 10;
+}
+
+
+/* ==============================
+   ROLLO SUPERIOR
+   ============================== */
+
+.borde-arriba {
+    top: -55px;
+    transform: scaleY(-1);
+
+}
+
+
+/* ==============================
+   ROLLO INFERIOR
+   ============================== */
+
+.borde-abajo {
+    bottom: -25px;
+
+}
+
+
+/* ==============================
+   CONTENIDO
+   ============================== */
+
+.contenido-pergamino {
+    position: relative;
+
+    z-index: 5;
+
+    padding-top: 70px;
+    padding-bottom: 80px;
+}
+
+
+/* ==============================
+   TÍTULO
+   ============================== */
+
+.titulo-rollo {
+    position: relative;
+
+    z-index: 20;
+
+    width: 100%;
+
+    margin: 0 auto 25px;
+
+    text-align: center;
+}
+
+
+.titulo-rollo h1 {
+    margin: 0;
+
+    color: #30200f;
+
+    font-size: 1.75rem;
+
+    letter-spacing: 3px;
+
+    text-shadow:
+        0 1px 1px rgba(255, 245, 210, 0.5);
+
+    white-space: nowrap;
+}
+
+
+/* ==============================
+   DECORACIÓN
+   ============================== */
+
+.decoracion {
+    position: relative;
+
+    z-index: 20;
+
+    margin-top: 10px;
+
+    margin-bottom: 20px;
+}
+
+
+/* ==============================
+   ENLACE LOGIN
+   ============================== */
+
+.pergamino .enlace-login {
+    color: #4a321b;
+
+    font-size: 0.95rem;
+
+    text-align: center;
+}
+
+
+.pergamino .enlace-login a {
+    display: inline-block;
+
+    margin-left: 5px;
+
+    color: #3b2410;
+
+    font-weight: bold;
+
+    text-decoration: underline;
+
+    text-decoration-thickness: 1px;
+
+    text-underline-offset: 3px;
+
+    transition: 0.2s;
+}
+
+
+.pergamino .enlace-login a:hover {
+    color: #8a5b20;
+}
+/* =========================================
+   PÁGINA DE INICIO - ROLFORGE
+   ========================================= */
+
+.inicio {
+    width: min(1200px, 92%);
+    margin: 0 auto;
+    padding: 35px 0 70px;
+}
+
+
+/* =========================================
+   CABECERA
+   ========================================= */
+
+.cabecera {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 18px 25px;
+    margin-bottom: 70px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(35, 20, 10, 0.95),
+            rgba(18, 10, 6, 0.98)
+        );
+
+    border: 1px solid #62441f;
+    border-top: 2px solid #8a6328;
+    border-bottom: 2px solid #4a3016;
+
+    box-shadow:
+        0 8px 20px rgba(0, 0, 0, 0.6),
+        inset 0 1px 0 rgba(216, 184, 106, 0.12);
+}
+
+
+/* LOGO */
+
+.logo {
+    color: var(--gold-light);
+
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1.7rem;
+    font-weight: bold;
+
+    letter-spacing: 4px;
+
+    text-shadow:
+        0 2px 3px #000,
+        0 0 12px rgba(184, 138, 59, 0.15);
+}
+
+
+/* USUARIO */
+
+.usuario {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+
+    color: var(--text);
+    font-size: 1rem;
+}
+
+.usuario a {
+    color: var(--gold-light);
+
+    text-decoration: none;
+    font-weight: bold;
+
+    transition:
+        color 0.2s,
+        transform 0.2s;
+}
+
+.usuario a:hover {
+    color: #f0d28b;
+    transform: translateY(-1px);
+}
+
+
+/* =========================================
+   BIENVENIDA
+   ========================================= */
+
+.bienvenida {
+    text-align: center;
+    margin-bottom: 65px;
+}
+
+.bienvenida h1 {
+    margin: 0 0 15px;
+
+    color: var(--gold-light);
+
+    font-size: 3rem;
+    letter-spacing: 5px;
+
+    text-shadow:
+        0 3px 4px #000,
+        0 0 18px rgba(184, 138, 59, 0.15);
+}
+
+.bienvenida p {
+    margin: 0;
+
+    color: var(--text-muted);
+
+    font-size: 1.2rem;
+}
+
+
+/* =========================================
+   OPCIONES
+   ========================================= */
+
+.opciones {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 30px;
+}
+
+
+/* =========================================
+   TARJETAS
+   ========================================= */
+
+.opcion {
+    position: relative;
+
+    padding: 35px 30px;
+
+    min-height: 230px;
+
+    text-align: center;
+
+    background:
+        radial-gradient(
+            ellipse at center top,
+            rgba(110, 65, 30, 0.22),
+            transparent 65%
+        ),
+        linear-gradient(
+            135deg,
+            #2b190e,
+            #1b0e08
+        );
+
+    border: 1px solid #62441f;
+
+    box-shadow:
+        0 15px 30px rgba(0, 0, 0, 0.65),
+        inset 0 0 20px rgba(0, 0, 0, 0.35);
+
+    transition:
+        transform 0.25s ease,
+        border-color 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+
+/* DECORACIÓN DE LA TARJETA */
+
+.opcion::before {
+    content: "";
+
+    position: absolute;
+
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+
+    border: 1px solid rgba(184, 138, 59, 0.15);
+
+    pointer-events: none;
+}
+
+
+/* EFECTO AL PASAR EL RATÓN */
+
+.opcion:hover {
+    transform: translateY(-6px);
+
+    border-color: var(--gold);
+
+    box-shadow:
+        0 20px 35px rgba(0, 0, 0, 0.75),
+        0 0 18px rgba(184, 138, 59, 0.10),
+        inset 0 0 20px rgba(0, 0, 0, 0.35);
+}
+
+
+/* =========================================
+   TÍTULOS DE LAS TARJETAS
+   ========================================= */
+
+.opcion h2 {
+    margin: 0 0 18px;
+
+    color: var(--gold-light);
+
+    font-size: 1.6rem;
+    letter-spacing: 2px;
+
+    text-shadow:
+        0 2px 3px #000;
+}
+
+
+/* TEXTO */
+
+.opcion p {
+    min-height: 48px;
+
+    margin: 0 0 25px;
+
+    color: var(--text);
+
+    line-height: 1.5;
+}
+
+
+/* =========================================
+   BOTONES
+   ========================================= */
+
+.opcion button {
+    padding: 13px 24px;
+
+    color: #f2dfb0;
+
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 0.95rem;
+    font-weight: bold;
+
+    letter-spacing: 1px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #805b25,
+            #4d3216
+        );
+
+    border: 1px solid #a47a34;
+    border-radius: 3px;
+
+    box-shadow:
+        0 4px 8px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(255, 220, 140, 0.15);
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s,
+        transform 0.2s,
+        box-shadow 0.2s;
+}
+
+.opcion button:hover {
+    background:
+        linear-gradient(
+            135deg,
+            #a17432,
+            #63451e
+        );
+
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 6px 12px rgba(0, 0, 0, 0.6),
+        0 0 10px rgba(184, 138, 59, 0.12);
+}
+
+.opcion button:active {
+    transform: translateY(0);
+}
+
+/* =========================================
+   PÁGINA DE INICIO - ROLFORGE
+   ========================================= */
+
+.inicio {
+    width: min(1200px, 92%);
+    margin: 0 auto;
+    padding: 35px 0 70px;
+}
+
+
+/* =========================================
+   CABECERA
+   ========================================= */
+
+.cabecera {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    width: 100%;
+
+    padding: 18px 25px;
+    margin-bottom: 60px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #2b190e,
+            #160b07
+        );
+
+    border: 1px solid #62441f;
+    border-top: 2px solid #8a6328;
+    border-bottom: 2px solid #4a3016;
+
+    box-shadow:
+        0 8px 20px rgba(0, 0, 0, 0.6),
+        inset 0 1px 0 rgba(216, 184, 106, 0.12);
+}
+
+
+/* =========================================
+   LOGO
+   ========================================= */
+
+.inicio .logo {
+    color: var(--gold-light);
+
+    font-size: 1.7rem;
+    font-weight: bold;
+
+    letter-spacing: 4px;
+
+    text-shadow:
+        0 2px 3px #000,
+        0 0 12px rgba(184, 138, 59, 0.15);
+}
+
+
+/* =========================================
+   USUARIO
+   ========================================= */
+
+.inicio .usuario {
+    display: flex;
+    align-items: center;
+
+    gap: 18px;
+
+    color: var(--text);
+
+    font-size: 1rem;
+}
+
+.inicio .usuario a {
+    color: var(--gold-light);
+
+    font-weight: bold;
+    text-decoration: none;
+
+    transition: 0.2s;
+}
+
+.inicio .usuario a:hover {
+    color: #f0d28b;
+}
+
+
+/* =========================================
+   BIENVENIDA
+   ========================================= */
+
+.bienvenida {
+    width: 100%;
+
+    text-align: center;
+
+    margin-bottom: 60px;
+}
+
+.bienvenida h1 {
+    margin: 0 0 15px;
+
+    color: var(--gold-light);
+
+    font-size: 3rem;
+    letter-spacing: 5px;
+
+    text-shadow:
+        0 3px 4px #000,
+        0 0 18px rgba(184, 138, 59, 0.15);
+}
+
+.bienvenida p {
+    margin: 0;
+
+    color: var(--text-muted);
+
+    font-size: 1.2rem;
+}
+
+
+/* =========================================
+   TARJETAS
+   ========================================= */
+
+.opciones {
+    display: grid;
+
+    grid-template-columns: repeat(3, 1fr);
+
+    gap: 30px;
+
+    width: 100%;
+}
+
+.opcion {
+    position: relative;
+
+    min-height: 250px;
+
+    padding: 35px 30px;
+
+    text-align: center;
+
+    background:
+        radial-gradient(
+            ellipse at center top,
+            rgba(110, 65, 30, 0.25),
+            transparent 65%
+        ),
+        linear-gradient(
+            135deg,
+            #2b190e,
+            #1b0e08
+        );
+
+    border: 1px solid #62441f;
+
+    box-shadow:
+        0 15px 30px rgba(0, 0, 0, 0.65),
+        inset 0 0 20px rgba(0, 0, 0, 0.35);
+
+    transition:
+        transform 0.25s ease,
+        border-color 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+
+/* BORDE INTERIOR */
+
+.opcion::before {
+    content: "";
+
+    position: absolute;
+
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+
+    border: 1px solid rgba(184, 138, 59, 0.15);
+
+    pointer-events: none;
+}
+
+
+/* HOVER */
+
+.opcion:hover {
+    transform: translateY(-6px);
+
+    border-color: var(--gold);
+
+    box-shadow:
+        0 20px 35px rgba(0, 0, 0, 0.75),
+        0 0 18px rgba(184, 138, 59, 0.10);
+}
+
+
+/* =========================================
+   TÍTULOS
+   ========================================= */
+
+.opcion h2 {
+    margin: 0 0 18px;
+
+    color: var(--gold-light);
+
+    font-size: 1.6rem;
+    letter-spacing: 2px;
+
+    text-shadow:
+        0 2px 3px #000;
+}
+
+
+/* =========================================
+   TEXTO
+   ========================================= */
+
+.opcion p {
+    min-height: 48px;
+
+    margin: 0 0 25px;
+
+    color: var(--text);
+
+    line-height: 1.5;
+}
+
+
+/* =========================================
+   BOTONES
+   ========================================= */
+
+.opcion button {
+    padding: 13px 24px;
+
+    color: #f2dfb0;
+
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 0.95rem;
+    font-weight: bold;
+
+    letter-spacing: 1px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #805b25,
+            #4d3216
+        );
+
+    border: 1px solid #a47a34;
+    border-radius: 3px;
+
+    box-shadow:
+        0 4px 8px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(255, 220, 140, 0.15);
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s,
+        transform 0.2s,
+        box-shadow 0.2s;
+}
+
+.opcion button:hover {
+    background:
+        linear-gradient(
+            135deg,
+            #a17432,
+            #63451e
+        );
+
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 6px 12px rgba(0, 0, 0, 0.6),
+        0 0 10px rgba(184, 138, 59, 0.12);
+}
+
+.opcion button:active {
+    transform: translateY(0);
+}
+
+
+/* =========================================
+   RESPONSIVE
+   ========================================= */
+
+@media (max-width: 850px) {
+
+    .opciones {
+        grid-template-columns: 1fr;
+    }
+
+    .cabecera {
+        flex-direction: column;
+        gap: 15px;
+
+        text-align: center;
+    }
+
+    .bienvenida h1 {
+        font-size: 2.3rem;
+    }
+}
+
+@media (max-width: 500px) {
+
+    .inicio {
+        width: 92%;
+        padding-top: 20px;
+    }
+
+    .inicio .logo {
+        font-size: 1.3rem;
+    }
+
+    .bienvenida h1 {
+        font-size: 1.8rem;
+        letter-spacing: 3px;
+    }
+
+    .opcion {
+        padding: 30px 20px;
+    }
+}
+
+/* ================================
+   BARRA SUPERIOR DE ROLFORGE
+================================ */
+
+.barra-superior {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    padding: 20px 30px;
+    border-bottom: 2px solid #79552f;
+    background: rgba(43, 29, 19, 0.95);
+    border-radius: 10px;
+}
+
+.navegacion-principal,
+.acciones-cuenta {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.enlace-menu,
+.cerrar-sesion {
+    color: #f2dfb7;
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.2s;
+}
+
+.enlace-menu:hover,
+.cerrar-sesion:hover {
+    color: #e8ad56;
+}
+
+/* ================================
+   CABECERA DE PERSONAJES
+================================ */
+
+.biblioteca-personajes {
+    padding: 30px;
+}
+
+.cabecera-personajes {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 30px;
+}
+
+.cabecera-personajes h1 {
+    margin: 0;
+    color: #f2dfb7;
+    font-size: 2rem;
+}
+
+.boton-crear {
+    padding: 12px 20px;
+    background: #8b5e32;
+    color: #fff1d0;
+    border: 1px solid #c49a5a;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.boton-crear:hover {
+    background: #a8753e;
+    transform: translateY(-2px);
+}
+
+/* ================================
+   CUADRÍCULA DE PERSONAJES
+================================ */
+
+.rejilla-personajes {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 24px;
+}
+
+.tarjeta-personaje {
+    overflow: hidden;
+    background: #ead7ad;
+    color: #382719;
+    border: 2px solid #8b633b;
+    border-radius: 12px;
+    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.25);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.tarjeta-personaje:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.35);
+}
+
+.ilustracion-personaje {
+    min-height: 180px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background:
+        linear-gradient(rgba(52, 34, 20, 0.2), rgba(52, 34, 20, 0.5)),
+        linear-gradient(135deg, #8b6a43, #3d3023);
+    border-bottom: 3px solid #8b633b;
+}
+
+.ilustracion-personaje span {
+    font-size: 5rem;
+    filter: drop-shadow(2px 4px 3px rgba(0, 0, 0, 0.5));
+}
+
+.informacion-personaje {
+    padding: 18px;
+}
+
+.informacion-personaje h2 {
+    margin: 0 0 10px;
+    font-size: 1.25rem;
+    overflow-wrap: anywhere;
+}
+
+.informacion-personaje p {
+    margin: 0 0 15px;
+    font-size: 0.95rem;
+}
+
+.nivel-personaje {
+    display: inline-block;
+    padding: 5px 10px;
+    background: #8b633b;
+    color: #fff1d0;
+    border-radius: 5px;
+    font-size: 0.85rem;
+}
+
+.acciones-personaje {
+    margin-top: 18px;
+}
+
+.acciones-personaje button {
+    width: 100%;
+    padding: 10px;
+    background: #4b3525;
+    color: #f2dfb7;
+    border: 1px solid #8b633b;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.acciones-personaje button:hover {
+    background: #67492e;
+}
+
+/* ================================
+   DISEÑO RESPONSIVE
+================================ */
+
+@media (max-width: 1100px) {
+    .rejilla-personajes {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 800px) {
+    .rejilla-personajes {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .barra-superior {
+        padding: 18px;
+    }
+
+    .biblioteca-personajes {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 500px) {
+    .rejilla-personajes {
+        grid-template-columns: 1fr;
+    }
+
+    .cabecera-personajes {
+        align-items: stretch;
+    }
+
+    .boton-crear {
+        width: 100%;
+    }
+}
+/* ============================= */
+/* PERFIL DE USUARIO */
+/* ============================= */
+
+.perfil {
+    position: relative;
+}
+
+
+/* Botón de la foto */
+
+.boton-perfil {
+    width: 46px;
+    height: 46px;
+
+    padding: 0;
+
+    border: 2px solid #b88945;
+    border-radius: 50%;
+
+    background: transparent;
+
+    cursor: pointer;
+
+    overflow: hidden;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+/* Foto pequeña */
+
+.foto-perfil {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+
+    display: block;
+}
+
+
+/* Recuadro */
+
+.menu-perfil {
+
+    position: absolute;
+
+    top: 58px;
+    right: 0;
+
+    width: 280px;
+
+    background: #2b1b12;
+
+    border: 1px solid #9a6b32;
+    border-radius: 10px;
+
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+
+    overflow: hidden;
+
+    opacity: 0;
+    visibility: hidden;
+
+    transform: translateY(-8px);
+
+    transition:
+        opacity 0.2s ease,
+        transform 0.2s ease,
+        visibility 0.2s ease;
+
+    z-index: 1000;
+}
+
+
+/* Cuando está abierto */
+
+.menu-perfil.mostrar {
+
+    opacity: 1;
+
+    visibility: visible;
+
+    transform: translateY(0);
+
+}
+
+
+/* ============================= */
+/* CABECERA DEL PERFIL */
+/* ============================= */
+
+.cabecera-perfil {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 14px;
+
+    padding: 18px;
+
+    border-bottom: 1px solid #6f4928;
+}
+
+
+/* Foto grande */
+
+.foto-perfil-menu {
+
+    width: 58px;
+    height: 58px;
+
+    border-radius: 50%;
+
+    object-fit: cover;
+
+    border: 2px solid #b88945;
+
+    flex-shrink: 0;
+}
+
+
+/* Nombre y email */
+
+.datos-perfil {
+
+    display: flex;
+
+    flex-direction: column;
+
+    min-width: 0;
+}
+
+
+.datos-perfil strong {
+
+    color: #f3dfb0;
+
+    font-size: 17px;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+}
+
+
+.datos-perfil span {
+
+    margin-top: 4px;
+
+    color: #bfa889;
+
+    font-size: 13px;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+}
+
+
+/* ============================= */
+/* OPCIONES */
+/* ============================= */
+
+.opciones-perfil {
+
+    padding: 6px 0;
+}
+
+
+.opciones-perfil a {
+
+    display: block;
+
+    padding: 13px 18px;
+
+    color: #f3dfb0;
+
+    text-decoration: none;
+
+    font-family: Georgia, serif;
+
+    font-size: 15px;
+
+    transition: background 0.2s ease;
+}
+
+
+.opciones-perfil a:hover {
+
+    background: #4a2e1d;
+
+}
+
+
+/* Cerrar sesión */
+
+.opciones-perfil a:last-child {
+
+    color: #d99a8c;
+
+}
+/* =========================================================
+   EDITAR PERFIL - ESTILOS DEFINITIVOS
+   ========================================================= */
+
+.editar-perfil {
+    min-height: 100vh !important;
+    width: 100% !important;
+
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+
+    padding: 50px !important;
+    box-sizing: border-box !important;
+}
+
+
+/* TARJETA PRINCIPAL */
+
+.editar-perfil .tarjeta-editar-perfil {
+    width: 900px !important;
+    max-width: 100% !important;
+
+    padding: 40px !important;
+    box-sizing: border-box !important;
+
+    background: rgba(20, 12, 8, 0.95) !important;
+
+    border: 1px solid #9b6b2f !important;
+    border-radius: 12px !important;
+
+    box-shadow:
+        0 15px 40px rgba(0, 0, 0, 0.7) !important;
+
+    color: #f2e4c4 !important;
+}
+
+
+/* TITULO */
+
+.editar-perfil .cabecera-editar {
+    margin-bottom: 30px !important;
+}
+
+.editar-perfil .cabecera-editar h1 {
+    margin: 0 !important;
+
+    font-size: 38px !important;
+    color: #d8a84e !important;
+
+    letter-spacing: 3px !important;
+}
+
+.editar-perfil .cabecera-editar p {
+    margin: 8px 0 0 0 !important;
+
+    color: #c8b99b !important;
+}
+
+
+/* =========================================================
+   CONTENIDO
+   ========================================================= */
+
+.editar-perfil .contenido-editar {
+    display: flex !important;
+
+    justify-content: space-between !important;
+    align-items: flex-start !important;
+
+    gap: 70px !important;
+
+    margin-top: 30px !important;
+}
+
+
+/* IZQUIERDA */
+
+.editar-perfil .datos-editar {
+    flex: 1 !important;
+    min-width: 0 !important;
+}
+
+
+/* =========================================================
+   CAMPOS
+   ========================================================= */
+
+.editar-perfil .campo-perfil {
+    margin-bottom: 30px !important;
+}
+
+.editar-perfil .campo-perfil label {
+    display: block !important;
+
+    margin-bottom: 10px !important;
+
+    color: #d8a84e !important;
+
+    font-weight: bold !important;
+    letter-spacing: 1px !important;
+}
+
+
+/* INPUTS */
+
+.editar-perfil .campo-perfil input[type="text"],
+.editar-perfil .campo-perfil input[type="email"] {
+    width: 100% !important;
+
+    height: 48px !important;
+
+    box-sizing: border-box !important;
+
+    padding: 10px 15px !important;
+
+    background: #100b08 !important;
+
+    border: 1px solid #765025 !important;
+    border-radius: 6px !important;
+
+    color: #f2e4c4 !important;
+
+    font-size: 16px !important;
+
+    outline: none !important;
+}
+
+
+.editar-perfil .campo-perfil input[type="text"]:focus {
+    border-color: #d8a84e !important;
+
+    box-shadow:
+        0 0 8px rgba(216, 168, 78, 0.25) !important;
+}
+
+
+/* EMAIL BLOQUEADO */
+
+.editar-perfil .campo-perfil input.campo-bloqueado {
+    background: #2b2927 !important;
+
+    color: #888 !important;
+
+    border-color: #555 !important;
+
+    cursor: not-allowed !important;
+}
+
+
+/* TEXTO PEQUEÑO */
+
+.editar-perfil .campo-perfil small,
+.editar-perfil .foto-editar-contenedor small {
+    display: block !important;
+
+    margin-top: 8px !important;
+
+    color: #9c917e !important;
+
+    font-size: 13px !important;
+}
+
+
+/* =========================================================
+   USUARIO + CHECK
+   ========================================================= */
+
+.editar-perfil .campo-usuario {
+    position: relative !important;
+
+    display: flex !important;
+    align-items: center !important;
+}
+
+
+.editar-perfil .campo-usuario input {
+    padding-right: 50px !important;
+}
+
+
+.editar-perfil .estado-usuario {
+    position: absolute !important;
+
+    right: 15px !important;
+
+    font-size: 20px !important;
+
+    line-height: 1 !important;
+}
+
+
+.editar-perfil .estado-usuario.correcto {
+    color: #58c77b !important;
+}
+
+
+.editar-perfil .estado-usuario.incorrecto {
+    color: #e45c5c !important;
+}
+
+
+.editar-perfil .estado-usuario.comprobando {
+    color: #c9a85c !important;
+}
+
+
+/* =========================================================
+   FOTO
+   ========================================================= */
+
+.editar-perfil .foto-editar-contenedor {
+    width: 280px !important;
+
+    flex-shrink: 0 !important;
+
+    text-align: center !important;
+}
+
+
+.editar-perfil .foto-editar-contenedor > label:first-child {
+    display: block !important;
+
+    margin-bottom: 15px !important;
+
+    text-align: center !important;
+
+    color: #d8a84e !important;
+
+    font-weight: bold !important;
+}
+
+
+/* FOTO GRANDE */
+
+.editar-perfil .foto-perfil-grande {
+    display: block !important;
+
+    width: 210px !important;
+    height: 210px !important;
+
+    margin: 0 auto 20px auto !important;
+
+    object-fit: cover !important;
+
+    border-radius: 50% !important;
+
+    border: 3px solid #a87632 !important;
+
+    background: #100b08 !important;
+
+    box-shadow:
+        0 5px 20px rgba(0, 0, 0, 0.6) !important;
+}
+
+
+/* BOTÓN SUBIR FOTO */
+
+.editar-perfil .boton-subir-foto {
+    display: inline-block !important;
+
+    padding: 11px 18px !important;
+
+    background: linear-gradient(
+        #805b29,
+        #563817
+    ) !important;
+
+    border: 1px solid #a87935 !important;
+
+    border-radius: 6px !important;
+
+    color: #f5e6c5 !important;
+
+    font-weight: bold !important;
+
+    cursor: pointer !important;
+
+    transition: 0.2s !important;
+}
+
+
+.editar-perfil .boton-subir-foto:hover {
+    background: linear-gradient(
+        #9b7134,
+        #68451d
+    ) !important;
+
+    transform: translateY(-1px) !important;
+}
+
+
+/* =========================================================
+   MENSAJES
+   ========================================================= */
+
+.editar-perfil .mensaje-exito {
+    margin: 20px 0 !important;
+
+    padding: 12px 15px !important;
+
+    background: rgba(50, 120, 70, 0.2) !important;
+
+    border: 1px solid #4d925f !important;
+
+    border-radius: 6px !important;
+
+    color: #8ee0a0 !important;
+}
+
+
+.editar-perfil .mensaje-error {
+    margin: 20px 0 !important;
+
+    padding: 12px 15px !important;
+
+    background: rgba(140, 40, 40, 0.2) !important;
+
+    border: 1px solid #a64d4d !important;
+
+    border-radius: 6px !important;
+
+    color: #ed8585 !important;
+}
+
+
+/* =========================================================
+   BOTONES INFERIORES
+   ========================================================= */
+
+.editar-perfil .botones-editar {
+    display: flex !important;
+
+    justify-content: flex-end !important;
+    align-items: center !important;
+
+    gap: 15px !important;
+
+    margin-top: 35px !important;
+
+    padding-top: 25px !important;
+
+    border-top: 1px solid #4c331d !important;
+}
+
+
+/* CANCELAR */
+
+.editar-perfil .boton-cancelar {
+    display: inline-block !important;
+
+    padding: 12px 22px !important;
+
+    color: #c7b89b !important;
+
+    text-decoration: none !important;
+
+    border: 1px solid #66523a !important;
+
+    border-radius: 6px !important;
+}
+
+
+.editar-perfil .boton-cancelar:hover {
+    background: #241912 !important;
+}
+
+
+/* GUARDAR */
+
+.editar-perfil .botones-editar button {
+    padding: 12px 22px !important;
+
+    border: 1px solid #b07b31 !important;
+    border-radius: 6px !important;
+
+    background: linear-gradient(
+        #805b29,
+        #563817
+    ) !important;
+
+    color: #f5e6c5 !important;
+
+    font-weight: bold !important;
+
+    cursor: pointer !important;
+}
+
+
+.editar-perfil .botones-editar button:hover:not(:disabled) {
+    background: linear-gradient(
+        #9b7134,
+        #68451d
+    ) !important;
+}
+
+
+.editar-perfil .botones-editar button:disabled {
+    background: #3a332c !important;
+
+    border-color: #555 !important;
+
+    color: #777 !important;
+
+    cursor: not-allowed !important;
+}
+
+
+/* =========================================================
+   MÓVIL
+   ========================================================= */
+
+@media (max-width: 750px) {
+
+    .editar-perfil {
+        padding: 20px !important;
+    }
+
+    .editar-perfil .tarjeta-editar-perfil {
+        padding: 25px !important;
+    }
+
+    .editar-perfil .contenido-editar {
+        flex-direction: column-reverse !important;
+
+        gap: 35px !important;
+    }
+
+    .editar-perfil .datos-editar {
+        width: 100% !important;
+    }
+
+    .editar-perfil .foto-editar-contenedor {
+        width: 100% !important;
+    }
+
+}
+/* =========================================================
+   CREAR PERSONAJE
+   ========================================================= */
+
+.crear-personaje {
+    width: min(1000px, 92%);
+    margin: 0 auto;
+    padding: 70px 0 100px;
+}
+
+/* Título de la página */
+
+.crear-personaje > h1 {
+    text-align: center;
+    font-size: 2.4rem;
+    margin-bottom: 10px;
+}
+
+.crear-personaje > p {
+    text-align: center;
+    color: var(--text-muted);
+    margin-bottom: 35px;
+}
+
+
+/* =========================================================
+   BLOQUES DEL FORMULARIO
+   ========================================================= */
+
+.crear-personaje .bloque-personaje {
+    position: relative;
+    margin-bottom: 30px;
+    padding: 35px 45px;
+
+    background:
+        radial-gradient(
+            ellipse at center top,
+            rgba(110, 65, 30, 0.22),
+            transparent 65%
+        ),
+        linear-gradient(
+            135deg,
+            #2b190e,
+            #1b0e08
+        );
+
+    border: 1px solid #62441f;
+
+    box-shadow:
+        0 15px 30px rgba(0, 0, 0, 0.65),
+        inset 0 0 20px rgba(0, 0, 0, 0.35);
+}
+
+/* Borde interior */
+
+.crear-personaje .bloque-personaje::before {
+    content: "";
+
+    position: absolute;
+
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+
+    border: 1px solid rgba(184, 138, 59, 0.15);
+
+    pointer-events: none;
+}
+
+
+/* =========================================================
+   TÍTULOS DE LOS BLOQUES
+   ========================================================= */
+
+.crear-personaje .bloque-personaje h2 {
+    margin: 0 0 30px;
+
+    color: var(--gold-light);
+
+    font-size: 1.5rem;
+    letter-spacing: 3px;
+
+    text-transform: uppercase;
+}
+
+
+/* =========================================================
+   CAMPOS
+   ========================================================= */
+
+.crear-personaje .campo-personaje {
+    margin-bottom: 25px;
+}
+
+.crear-personaje .campo-personaje label {
+    display: block;
+
+    margin-bottom: 8px;
+
+    color: #c8ae79;
+
+    font-size: 0.85rem;
+    font-weight: bold;
+
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
+
+
+/* Inputs y selects */
+
+.crear-personaje .campo-personaje input,
+.crear-personaje .campo-personaje select {
+    width: 100%;
+    max-width: 100%;
+
+    height: 48px;
+}
+
+
+/* =========================================================
+   ATRIBUTOS
+   ========================================================= */
+
+.crear-personaje .metodo-atributos {
+    display: flex;
+    gap: 35px;
+    align-items: center;
+
+    margin-bottom: 25px;
+}
+
+.crear-personaje .metodo-atributos label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    margin: 0;
+
+    color: #c8ae79;
+}
+
+
+/* Los radio NO deben ocupar todo el ancho */
+
+.crear-personaje .metodo-atributos input[type="radio"] {
+    width: auto;
+    height: auto;
+
+    accent-color: var(--gold);
+}
+
+
+/* =========================================================
+   PUNTOS DISPONIBLES
+   ========================================================= */
+
+.crear-personaje .puntos-disponibles {
+    margin-bottom: 25px;
+
+    color: var(--text);
+
+    font-size: 1rem;
+}
+
+.crear-personaje .puntos-disponibles strong {
+    color: var(--gold-light);
+}
+
+
+/* =========================================================
+   LISTA DE ATRIBUTOS
+   ========================================================= */
+
+.crear-personaje .lista-atributos {
+    display: grid;
+
+    grid-template-columns: repeat(2, 1fr);
+
+    gap: 14px 45px;
+}
+
+
+/* Cada atributo */
+
+.crear-personaje .atributo {
+    display: grid;
+
+    grid-template-columns: 1fr auto auto auto;
+
+    align-items: center;
+
+    gap: 10px;
+
+    padding: 10px 0;
+
+    border-bottom: 1px solid rgba(117, 80, 31, 0.45);
+}
+
+
+/* Nombre */
+
+.crear-personaje .atributo-nombre {
+    color: var(--text);
+
+    font-weight: bold;
+}
+
+
+/* Botones + y - */
+
+.crear-personaje .atributo button {
+    width: 42px;
+    height: 42px;
+
+    padding: 0;
+
+    font-size: 1.2rem;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+/* Número */
+
+.crear-personaje .atributo-valor {
+    min-width: 30px;
+
+    text-align: center;
+
+    color: var(--gold-light);
+
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+
+/* =========================================================
+   SIGUIENTE
+   ========================================================= */
+
+.crear-personaje .acciones-formulario {
+    display: flex;
+
+    justify-content: flex-end;
+
+    margin-top: 30px;
+}
+
+.crear-personaje .acciones-formulario button {
+    min-width: 180px;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 700px) {
+
+    .crear-personaje {
+        width: 94%;
+        padding-top: 40px;
+    }
+
+    .crear-personaje .bloque-personaje {
+        padding: 25px 20px;
+    }
+
+    .crear-personaje .lista-atributos {
+        grid-template-columns: 1fr;
+    }
+
+    .crear-personaje .metodo-atributos {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .crear-personaje .acciones-formulario {
+        justify-content: stretch;
+    }
+
+    .crear-personaje .acciones-formulario button {
+        width: 100%;
+    }
+}
+/* =========================================================
+   CREAR PERSONAJE
+   ========================================================= */
+
+.crear-personaje {
+    width: 100%;
+    min-height: 100vh;
+    box-sizing: border-box;
+    padding: 40px 20px 80px;
+    overflow-x: hidden;
+}
+
+/* Cabecera */
+
+.crear-personaje .cabecera {
+    width: min(1100px, 100%);
+    margin: 0 auto 45px;
+}
+
+
+/* Contenedor principal del formulario */
+
+.formulario-personaje {
+    width: min(900px, 100%);
+    margin: 0 auto;
+}
+
+
+/* Título */
+
+.formulario-personaje > h1 {
+    text-align: center;
+    margin: 0 0 8px;
+
+    color: var(--gold-light);
+
+    font-size: 2.5rem;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+}
+
+.formulario-personaje > p {
+    text-align: center;
+    margin: 0 0 40px;
+
+    color: var(--text-muted);
+    font-size: 1rem;
+}
+
+
+/* =========================================================
+   SECCIONES
+   ========================================================= */
+
+.seccion-creacion {
+    position: relative;
+
+    margin-bottom: 30px;
+    padding: 35px 45px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(48, 27, 15, 0.95),
+            rgba(20, 10, 6, 0.97)
+        );
+
+    border: 1px solid #62441f;
+
+    box-shadow:
+        0 15px 35px rgba(0, 0, 0, 0.65),
+        inset 0 0 25px rgba(0, 0, 0, 0.35);
+
+    box-sizing: border-box;
+}
+
+
+/* Borde interior */
+
+.seccion-creacion::before {
+    content: "";
+
+    position: absolute;
+
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+
+    border: 1px solid rgba(184, 138, 59, 0.12);
+
+    pointer-events: none;
+}
+
+
+/* Títulos */
+
+.seccion-creacion h2 {
+    position: relative;
+
+    margin: 0 0 30px;
+
+    color: var(--gold-light);
+
+    font-size: 1.45rem;
+    letter-spacing: 3px;
+
+    text-transform: uppercase;
+}
+
+
+/* =========================================================
+   CAMPOS
+   ========================================================= */
+
+.seccion-creacion .campo {
+    margin-bottom: 24px;
+}
+
+.seccion-creacion .campo:last-child {
+    margin-bottom: 0;
+}
+
+.seccion-creacion .campo label {
+    display: block;
+
+    margin-bottom: 8px;
+
+    color: #c8ae79;
+
+    font-size: 0.85rem;
+    font-weight: bold;
+
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+
+
+/* Inputs y selects */
+
+.seccion-creacion .campo input,
+.seccion-creacion .campo select {
+    display: block;
+
+    width: 100%;
+    height: 48px;
+
+    box-sizing: border-box;
+}
+
+
+/* =========================================================
+   MÉTODO DE ATRIBUTOS
+   ========================================================= */
+
+.metodo-atributos {
+    display: flex;
+    align-items: center;
+
+    gap: 35px;
+
+    margin-bottom: 25px;
+}
+
+.metodo-atributos label {
+    display: flex;
+    align-items: center;
+
+    gap: 9px;
+
+    margin: 0;
+
+    color: #c8ae79;
+
+    font-weight: bold;
+}
+
+
+/* Evitar que los radios hereden width:100% */
+
+.metodo-atributos input[type="radio"] {
+    width: auto;
+    height: auto;
+
+    margin: 0;
+
+    accent-color: var(--gold);
+}
+
+
+/* =========================================================
+   PUNTOS DISPONIBLES
+   ========================================================= */
+
+#atributos-puntos > p,
+#atributos-personalizado > p {
+    margin: 0 0 20px;
+
+    color: var(--text-muted);
+}
+
+#puntos-restantes {
+    color: var(--gold-light);
+    font-weight: bold;
+}
+
+
+/* =========================================================
+   ATRIBUTOS
+   ========================================================= */
+
+#atributos-puntos {
+    width: 100%;
+}
+
+#atributos-puntos .atributo {
+    display: grid;
+
+    grid-template-columns: 1fr 45px 45px 45px;
+
+    align-items: center;
+
+    gap: 8px;
+
+    min-height: 55px;
+
+    border-bottom: 1px solid rgba(117, 80, 31, 0.35);
+}
+
+
+/* Nombre del atributo */
+
+#atributos-puntos .atributo span:first-child {
+    color: var(--text);
+
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+
+/* Número */
+
+#atributos-puntos .atributo span[id^="valor-"] {
+    color: var(--gold-light);
+
+    text-align: center;
+
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+
+/* Botones + y - */
+
+#atributos-puntos .atributo button {
+    width: 42px;
+    height: 42px;
+
+    padding: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 1.1rem;
+}
+
+
+/* =========================================================
+   ATRIBUTOS PERSONALIZADOS
+   ========================================================= */
+
+#atributos-personalizado .atributo {
+    display: grid;
+
+    grid-template-columns: 1fr 120px;
+
+    align-items: center;
+
+    gap: 20px;
+
+    min-height: 55px;
+
+    border-bottom: 1px solid rgba(117, 80, 31, 0.35);
+}
+
+#atributos-personalizado .atributo label {
+    color: var(--text);
+
+    font-weight: bold;
+}
+
+#atributos-personalizado .atributo input {
+    width: 120px;
+    height: 42px;
+
+    box-sizing: border-box;
+
+    text-align: center;
+}
+
+
+/* =========================================================
+   BOTÓN SIGUIENTE
+   ========================================================= */
+
+.acciones-creacion {
+    display: flex;
+    justify-content: flex-end;
+
+    width: min(900px, 100%);
+
+    margin: 25px auto 0;
+}
+
+.acciones-creacion button {
+    min-width: 190px;
+}
+
+
+/* =========================================================
+   MÓVIL
+   ========================================================= */
+
+@media (max-width: 700px) {
+
+    .crear-personaje {
+        padding: 25px 12px 60px;
+    }
+
+    .formulario-personaje > h1 {
+        font-size: 1.8rem;
+    }
+
+    .seccion-creacion {
+        padding: 25px 20px;
+    }
+
+    .metodo-atributos {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    #atributos-puntos .atributo {
+        grid-template-columns: 1fr 40px 35px 40px;
+    }
+
+    #atributos-personalizado .atributo {
+        grid-template-columns: 1fr 90px;
+    }
+
+    #atributos-personalizado .atributo input {
+        width: 90px;
+    }
+
+    .acciones-creacion {
+        justify-content: stretch;
+    }
+
+    .acciones-creacion button {
+        width: 100%;
+    }
+}
