@@ -82,6 +82,45 @@ if (!is_array($indiceClases)) {
 
 
 $clases = [];
+$informacionClases = [];
+
+$rutaIndiceFluffClases = "../data/5etools/class/fluff-index.json";
+$fluffPorClase = [];
+
+if (file_exists($rutaIndiceFluffClases)) {
+    $indiceFluffClases = json_decode(
+        file_get_contents($rutaIndiceFluffClases),
+        true
+    );
+
+    if (is_array($indiceFluffClases)) {
+        foreach ($indiceFluffClases as $archivoFluff) {
+            if (!is_string($archivoFluff)) {
+                continue;
+            }
+
+            $rutaFluffClase = "../data/5etools/class/" . $archivoFluff;
+
+            if (!file_exists($rutaFluffClase)) {
+                continue;
+            }
+
+            $datosFluffClase = json_decode(
+                file_get_contents($rutaFluffClase),
+                true
+            );
+
+            if (!isset($datosFluffClase["classFluff"]) || !is_array($datosFluffClase["classFluff"])) {
+                continue;
+            }
+
+            foreach ($datosFluffClase["classFluff"] as $fluffClase) {
+                $claveFluffClase = ($fluffClase["name"] ?? "") . "|" . ($fluffClase["source"] ?? "");
+                $fluffPorClase[$claveFluffClase] = $fluffClase;
+            }
+        }
+    }
+}
 
 
 foreach ($indiceClases as $archivo) {
@@ -107,6 +146,54 @@ foreach ($indiceClases as $archivo) {
         if (!isset($clase["name"])) {
             continue;
         }
+
+        $nombreClase = $clase["name"];
+        $sourceClase = $clase["source"] ?? "";
+        $claveFluffClase = $nombreClase . "|" . $sourceClase;
+        $rasgosNivelUno = [];
+
+        foreach ($clase["classFeatures"] ?? [] as $referenciaRasgo) {
+            if (is_array($referenciaRasgo)) {
+                $referenciaRasgo = $referenciaRasgo["classFeature"] ?? "";
+            }
+
+            if (!is_string($referenciaRasgo)) {
+                continue;
+            }
+
+            $partesReferencia = explode("|", $referenciaRasgo);
+
+            if (count($partesReferencia) < 4 || (int)$partesReferencia[3] !== 1) {
+                continue;
+            }
+
+            $nombreRasgo = $partesReferencia[0];
+
+            foreach ($datosClase["classFeature"] ?? [] as $rasgoClase) {
+                if (
+                    ($rasgoClase["name"] ?? "") === $nombreRasgo &&
+                    ($rasgoClase["className"] ?? "") === $nombreClase &&
+                    ($rasgoClase["classSource"] ?? "") === $sourceClase &&
+                    (int)($rasgoClase["level"] ?? 0) === 1
+                ) {
+                    $rasgosNivelUno[] = [
+                        "name" => $rasgoClase["name"],
+                        "entries" => $rasgoClase["entries"] ?? []
+                    ];
+                    break;
+                }
+            }
+        }
+
+        $informacionClases[] = [
+            "name" => $nombreClase,
+            "source" => $sourceClase,
+            "edition" => $clase["edition"] ?? "",
+            "description" => $fluffPorClase[$claveFluffClase]["entries"] ?? [],
+            "hd" => $clase["hd"] ?? null,
+            "startingProficiencies" => $clase["startingProficiencies"] ?? [],
+            "features" => $rasgosNivelUno
+        ];
 
         /*
          * Guardamos la clase completa.
@@ -141,6 +228,75 @@ if (!isset($datosRazas["race"]) || !is_array($datosRazas["race"])) {
 }
 
 $razas = $datosRazas["race"];
+
+$rutaFluffRazas = "../data/5etools/fluff-races.json";
+
+if (!file_exists($rutaFluffRazas)) {
+    die("No se ha encontrado el archivo de información de razas de 5etools.");
+}
+
+$datosFluffRazas = json_decode(
+    file_get_contents($rutaFluffRazas),
+    true
+);
+
+if (!isset($datosFluffRazas["raceFluff"]) || !is_array($datosFluffRazas["raceFluff"])) {
+    die("No se pudo leer la información de razas de 5etools.");
+}
+
+$fluffPorRaza = [];
+
+foreach ($datosFluffRazas["raceFluff"] as $fluffRaza) {
+    $nombreFluff = $fluffRaza["name"] ?? "";
+    $sourceFluff = $fluffRaza["source"] ?? "";
+
+    $fluffPorRaza[$nombreFluff . "|" . $sourceFluff] = $fluffRaza;
+}
+
+$directorioImagenesRazas = realpath(__DIR__ . "/../data/5etools/img");
+$informacionRazas = [];
+
+foreach ($razas as $raza) {
+    $nombreRaza = $raza["name"] ?? "";
+    $sourceRaza = $raza["source"] ?? "";
+    $claveRaza = $nombreRaza . "|" . $sourceRaza;
+    $fluffRaza = $fluffPorRaza[$claveRaza] ?? [];
+    $rutaImagen = null;
+
+    if ($directorioImagenesRazas !== false && isset($fluffRaza["images"]) && is_array($fluffRaza["images"])) {
+        foreach ($fluffRaza["images"] as $imagen) {
+            $rutaRelativa = $imagen["href"]["path"] ?? "";
+
+            if (($imagen["href"]["type"] ?? "") !== "internal" || $rutaRelativa === "") {
+                continue;
+            }
+
+            $rutaFisica = realpath(
+                $directorioImagenesRazas . DIRECTORY_SEPARATOR .
+                str_replace(["/", "\\"], DIRECTORY_SEPARATOR, $rutaRelativa)
+            );
+
+            $prefijoImagenes = $directorioImagenesRazas . DIRECTORY_SEPARATOR;
+
+            if (
+                $rutaFisica !== false &&
+                is_file($rutaFisica) &&
+                strpos(strtolower($rutaFisica), strtolower($prefijoImagenes)) === 0
+            ) {
+                $rutaImagen = "../data/5etools/img/" . str_replace("\\", "/", $rutaRelativa);
+                break;
+            }
+        }
+    }
+
+    $informacionRazas[$claveRaza] = [
+        "name" => $nombreRaza,
+        "source" => $sourceRaza,
+        "entries" => $raza["entries"] ?? [],
+        "lore" => $fluffRaza["entries"] ?? [],
+        "image" => $rutaImagen
+    ];
+}
 
 
 /*
@@ -236,7 +392,11 @@ $atributos = [
                         Raza
                     </label>
 
-                    <select id="raza" name="raza">
+                    <select id="raza" name="raza" required>
+
+                        <option value="" selected disabled>
+                            Elegir raza
+                        </option>
 
                         <?php foreach ($razas as $raza): ?>
 
@@ -263,6 +423,35 @@ $atributos = [
 
                     </select>
 
+                    <section id="ficha-raza" class="ficha-raza" aria-live="polite">
+                        <p class="ficha-raza-vacia">
+                            Selecciona una raza para conocerla.
+                        </p>
+
+                        <div class="ficha-raza-contenido" hidden>
+                            <div class="ficha-raza-imagen-marco">
+                                <img class="ficha-raza-imagen" alt="" hidden>
+                            </div>
+
+                            <div class="ficha-raza-detalles">
+                                <header class="ficha-raza-cabecera">
+                                    <h3 class="ficha-raza-nombre"></h3>
+                                    <span class="ficha-raza-origen"></span>
+                                </header>
+
+                                <section class="ficha-raza-lore" hidden>
+                                    <h4>Sobre esta raza</h4>
+                                    <p></p>
+                                </section>
+
+                                <section class="ficha-raza-rasgos" hidden>
+                                    <h4>Rasgos raciales</h4>
+                                    <ul></ul>
+                                </section>
+                            </div>
+                        </div>
+                    </section>
+
                 </div>
 
 
@@ -274,7 +463,11 @@ $atributos = [
                         Clase
                     </label>
 
-                    <select id="clase" name="clase">
+                    <select id="clase" name="clase" required>
+
+                        <option value="" selected disabled>
+                            Elegir clase
+                        </option>
 
                         <?php foreach ($clases as $indice => $clase): ?>
 
@@ -307,6 +500,34 @@ $atributos = [
                         <?php endforeach; ?>
 
                     </select>
+
+                    <section id="ficha-clase" class="ficha-clase" aria-live="polite">
+                        <p class="ficha-clase-vacia">
+                            Selecciona una clase para conocerla.
+                        </p>
+
+                        <div class="ficha-clase-contenido" hidden>
+                            <header class="ficha-clase-cabecera">
+                                <h3 class="ficha-clase-nombre"></h3>
+                                <span class="ficha-clase-origen"></span>
+                            </header>
+
+                            <section class="ficha-clase-descripcion" hidden>
+                                <h4>Sobre esta clase</h4>
+                                <p></p>
+                            </section>
+
+                            <section class="ficha-clase-informacion" hidden>
+                                <h4>Información básica</h4>
+                                <ul></ul>
+                            </section>
+
+                            <section class="ficha-clase-rasgos" hidden>
+                                <h4>Nivel 1</h4>
+                                <ul></ul>
+                            </section>
+                        </div>
+                    </section>
 
                 </div>
 
@@ -430,7 +651,7 @@ $atributos = [
 
                     <section class="acciones-creacion">
 
-                        <button type="submit" onclick="prepararEnvio()">
+                        <button type="submit" onclick="prepararEnvio(event)">
                             Siguiente →
                         </button>
 
@@ -455,8 +676,331 @@ $atributos = [
         const clases = <?= json_encode(
             $clases,
             JSON_UNESCAPED_UNICODE |
-            JSON_UNESCAPED_SLASHES
+            JSON_UNESCAPED_SLASHES |
+            JSON_HEX_TAG |
+            JSON_HEX_APOS |
+            JSON_HEX_AMP |
+            JSON_HEX_QUOT
         ) ?>;
+
+        const informacionClases = <?= json_encode(
+            $informacionClases,
+            JSON_UNESCAPED_UNICODE |
+            JSON_UNESCAPED_SLASHES |
+            JSON_HEX_TAG |
+            JSON_HEX_APOS |
+            JSON_HEX_AMP |
+            JSON_HEX_QUOT
+        ) ?>;
+
+        const informacionRazas = <?= json_encode(
+            $informacionRazas,
+            JSON_UNESCAPED_UNICODE |
+            JSON_UNESCAPED_SLASHES |
+            JSON_HEX_TAG |
+            JSON_HEX_APOS |
+            JSON_HEX_AMP |
+            JSON_HEX_QUOT
+        ) ?>;
+
+
+        /*
+         * ==========================================
+         * FICHA DE RAZA
+         * ==========================================
+         */
+
+        const selectorRaza = document.getElementById("raza");
+        const fichaRaza = document.getElementById("ficha-raza");
+        const mensajeRazaVacia = fichaRaza.querySelector(".ficha-raza-vacia");
+        const contenidoFichaRaza = fichaRaza.querySelector(".ficha-raza-contenido");
+        const imagenFichaRaza = fichaRaza.querySelector(".ficha-raza-imagen");
+        const loreFichaRaza = fichaRaza.querySelector(".ficha-raza-lore");
+        const rasgosFichaRaza = fichaRaza.querySelector(".ficha-raza-rasgos");
+
+        function obtenerTextos(contenido, textos) {
+
+            if (typeof contenido === "string") {
+                const texto = contenido
+                    .replace(/\{@[a-zA-Z]+\s+([^}]+)\}/g, "$1")
+                    .replace(/\{@[^}]+\}/g, "")
+                    .replace(/\s+/g, " ")
+                    .trim();
+
+                if (texto !== "") {
+                    textos.push(texto);
+                }
+
+                return;
+            }
+
+            if (Array.isArray(contenido)) {
+                contenido.forEach(function (elemento) {
+                    obtenerTextos(elemento, textos);
+                });
+
+                return;
+            }
+
+            if (contenido && typeof contenido === "object") {
+                if (Array.isArray(contenido.entries)) {
+                    obtenerTextos(contenido.entries, textos);
+                } else if (Array.isArray(contenido.items)) {
+                    obtenerTextos(contenido.items, textos);
+                } else if (typeof contenido.text === "string") {
+                    obtenerTextos(contenido.text, textos);
+                }
+            }
+        }
+
+        function resumirTextoRaza(texto, limite) {
+            if (texto.length <= limite) {
+                return texto;
+            }
+
+            const corte = texto.lastIndexOf(" ", limite);
+
+            return texto.slice(0, corte > 0 ? corte : limite).trim() + "…";
+        }
+
+        function actualizarFichaRaza() {
+
+            const claveRaza = selectorRaza.value;
+            const informacion = informacionRazas[claveRaza];
+
+            mensajeRazaVacia.hidden = Boolean(informacion);
+            contenidoFichaRaza.hidden = !informacion;
+            fichaRaza.classList.remove("ficha-raza-con-imagen");
+            imagenFichaRaza.hidden = true;
+            imagenFichaRaza.removeAttribute("src");
+            loreFichaRaza.hidden = true;
+            rasgosFichaRaza.hidden = true;
+
+            if (!informacion) {
+                return;
+            }
+
+            fichaRaza.querySelector(".ficha-raza-nombre").textContent =
+                informacion.name;
+            fichaRaza.querySelector(".ficha-raza-origen").textContent =
+                informacion.source;
+
+            const textosLore = [];
+            obtenerTextos(informacion.lore, textosLore);
+
+            if (textosLore.length > 0) {
+                loreFichaRaza.querySelector("p").textContent =
+                    resumirTextoRaza(textosLore[0], 420);
+                loreFichaRaza.hidden = false;
+            }
+
+            const rasgos = [];
+            const rasgosGenericos = [
+                "age",
+                "alignment",
+                "size",
+                "language",
+                "languages",
+                "ability score increase"
+            ];
+
+            if (Array.isArray(informacion.entries)) {
+                informacion.entries.forEach(function (entrada) {
+                    if (
+                        !entrada ||
+                        typeof entrada !== "object" ||
+                        typeof entrada.name !== "string" ||
+                        rasgosGenericos.includes(entrada.name.toLowerCase())
+                    ) {
+                        return;
+                    }
+
+                    const textosRasgo = [];
+                    obtenerTextos(entrada.entries, textosRasgo);
+
+                    rasgos.push({
+                        nombre: entrada.name,
+                        descripcion: resumirTextoRaza(textosRasgo.join(" "), 150)
+                    });
+                });
+            }
+
+            const listaRasgos = rasgosFichaRaza.querySelector("ul");
+            listaRasgos.replaceChildren();
+
+            rasgos.slice(0, 4).forEach(function (rasgo) {
+                const elemento = document.createElement("li");
+                const nombre = document.createElement("strong");
+
+                nombre.textContent = rasgo.nombre;
+                elemento.appendChild(nombre);
+
+                if (rasgo.descripcion !== "") {
+                    elemento.appendChild(
+                        document.createTextNode(" — " + rasgo.descripcion)
+                    );
+                }
+
+                listaRasgos.appendChild(elemento);
+            });
+
+            rasgosFichaRaza.hidden = rasgos.length === 0;
+
+            if (informacion.image) {
+                imagenFichaRaza.onload = function () {
+                    imagenFichaRaza.hidden = false;
+                };
+
+                imagenFichaRaza.onerror = function () {
+                    imagenFichaRaza.hidden = true;
+                    imagenFichaRaza.removeAttribute("src");
+                };
+
+                imagenFichaRaza.src = informacion.image;
+                imagenFichaRaza.alt =
+                    "Ilustración de " + fichaRaza.querySelector(".ficha-raza-nombre").textContent;
+            }
+        }
+
+        selectorRaza.addEventListener("change", actualizarFichaRaza);
+
+        /*
+         * ==========================================
+         * FICHA DE CLASE
+         * ==========================================
+         */
+
+        const selectorClase = document.getElementById("clase");
+        const fichaClase = document.getElementById("ficha-clase");
+        const mensajeClaseVacia = fichaClase.querySelector(".ficha-clase-vacia");
+        const contenidoFichaClase = fichaClase.querySelector(".ficha-clase-contenido");
+        const descripcionFichaClase = fichaClase.querySelector(".ficha-clase-descripcion");
+        const informacionFichaClase = fichaClase.querySelector(".ficha-clase-informacion");
+        const rasgosFichaClase = fichaClase.querySelector(".ficha-clase-rasgos");
+
+        function resumirTexto(texto, limite) {
+            if (texto.length <= limite) {
+                return texto;
+            }
+
+            const corte = texto.lastIndexOf(" ", limite);
+
+            return texto.slice(0, corte > 0 ? corte : limite).trim() + "…";
+        }
+
+        function describirCompetencia(valor) {
+            if (typeof valor === "string") {
+                return valor
+                    .replace(/\{@[a-zA-Z]+\s+([^}|]+)(?:\|[^}]*)?\}/g, "$1")
+                    .replace(/\{@[^}]+\}/g, "")
+                    .trim();
+            }
+
+            if (Array.isArray(valor)) {
+                return valor.map(describirCompetencia).filter(Boolean).join(", ");
+            }
+
+            if (!valor || typeof valor !== "object") {
+                return "";
+            }
+
+            if (valor.choose && typeof valor.choose === "object") {
+                const opciones = describirCompetencia(valor.choose.from);
+                const cantidad = valor.choose.count || 1;
+                return opciones ? "elige " + cantidad + ": " + opciones : "";
+            }
+
+            if (typeof valor.any === "number") {
+                return "elige " + valor.any + " opciones";
+            }
+
+            return Object.keys(valor).filter(function (clave) {
+                return valor[clave] === true;
+            }).join(", ");
+        }
+
+        function actualizarFichaClase() {
+            const indice = selectorClase.value;
+            const clase = indice === "" ? null : clases[Number(indice)];
+            const informacion = indice === "" ? null : informacionClases[Number(indice)];
+            const coincideClase = clase && informacion &&
+                clase.name === informacion.name &&
+                (clase.source || "") === informacion.source &&
+                (clase.edition || "") === informacion.edition;
+
+            mensajeClaseVacia.hidden = Boolean(coincideClase);
+            contenidoFichaClase.hidden = !coincideClase;
+
+            if (!coincideClase) {
+                return;
+            }
+
+            fichaClase.querySelector(".ficha-clase-nombre").textContent =
+                informacion.name;
+            fichaClase.querySelector(".ficha-clase-origen").textContent =
+                [informacion.source, informacion.edition].filter(Boolean).join(" · ");
+
+            const textosDescripcion = [];
+            obtenerTextos(informacion.description, textosDescripcion);
+            const textoDescripcion = resumirTexto(textosDescripcion.join(" "), 500);
+
+            if (textoDescripcion !== "") {
+                descripcionFichaClase.querySelector("p").textContent = textoDescripcion;
+                descripcionFichaClase.hidden = false;
+            } else {
+                descripcionFichaClase.hidden = true;
+            }
+
+            const datosBasicos = [];
+            if (informacion.hd && informacion.hd.faces) {
+                datosBasicos.push("Dado de golpe: d" + informacion.hd.faces);
+            }
+
+            const competencias = informacion.startingProficiencies || {};
+            [
+                ["Armadura", competencias.armor],
+                ["Armas", competencias.weapons],
+                ["Herramientas", competencias.tools],
+                ["Habilidades", competencias.skills]
+            ].forEach(function (dato) {
+                const descripcion = describirCompetencia(dato[1]);
+                if (descripcion !== "") {
+                    datosBasicos.push(dato[0] + ": " + descripcion);
+                }
+            });
+
+            const listaInformacion = informacionFichaClase.querySelector("ul");
+            listaInformacion.replaceChildren();
+            datosBasicos.forEach(function (dato) {
+                const elemento = document.createElement("li");
+                elemento.textContent = dato;
+                listaInformacion.appendChild(elemento);
+            });
+            informacionFichaClase.hidden = datosBasicos.length === 0;
+
+            const listaRasgos = rasgosFichaClase.querySelector("ul");
+            listaRasgos.replaceChildren();
+            (informacion.features || []).slice(0, 6).forEach(function (rasgo) {
+                const elemento = document.createElement("li");
+                const nombre = document.createElement("strong");
+                const textos = [];
+
+                nombre.textContent = rasgo.name;
+                elemento.appendChild(nombre);
+                obtenerTextos(rasgo.entries, textos);
+
+                if (textos.length > 0) {
+                    elemento.appendChild(
+                        document.createTextNode(" — " + resumirTexto(textos.join(" "), 180))
+                    );
+                }
+
+                listaRasgos.appendChild(elemento);
+            });
+            rasgosFichaClase.hidden = listaRasgos.children.length === 0;
+        }
+
+        selectorClase.addEventListener("change", actualizarFichaClase);
 
 
         /*
@@ -587,7 +1131,7 @@ $atributos = [
          * SIGUIENTE PASO
          * ==========================================
          */
-        function prepararEnvio() {
+        function prepararEnvio(event) {
 
             const nombre =
                 document
@@ -613,12 +1157,24 @@ $atributos = [
             const raza =
                 document.getElementById("raza").value;
 
+            if (raza === "") {
+                alert("Debes seleccionar una raza para el personaje.");
+                event.preventDefault();
+                return;
+            }
+
 
             /*
              * Clase
              */
             const indiceClase =
                 document.getElementById("clase").value;
+
+            if (indiceClase === "") {
+                alert("Debes seleccionar una clase para el personaje.");
+                event.preventDefault();
+                return;
+            }
 
 
             /*
