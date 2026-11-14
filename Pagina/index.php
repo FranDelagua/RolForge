@@ -12,12 +12,14 @@ $consulta = $conexion->prepare(
     "SELECT id, name, level
      FROM characters
      WHERE user_id = ?
-     ORDER BY created_at DESC"
+     ORDER BY updated_at DESC, id DESC"
 );
 
 $consulta->execute([$usuario_id]);
 
 $personajes = $consulta->fetchAll(PDO::FETCH_ASSOC);
+$mensajeGuardado = $_SESSION["mensaje_personaje_guardado"] ?? "";
+unset($_SESSION["mensaje_personaje_guardado"]);
 
 ?>
 
@@ -139,6 +141,9 @@ $personajes = $consulta->fetchAll(PDO::FETCH_ASSOC);
 
             <div class="rejilla-personajes">
 
+                <?php if ($mensajeGuardado !== ""): ?>
+                    <p role="status"><?= htmlspecialchars($mensajeGuardado) ?></p>
+                <?php endif; ?>
                 <?php if (empty($personajes)): ?>
 
                     <p class="sin-personajes">

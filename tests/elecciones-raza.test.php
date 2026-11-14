@@ -60,6 +60,8 @@ $personajeConfirmado = [
     ]
 ];
 comprobarEleccion(eleccionesRazaConfirmadas($personajeConfirmado), "No se reconoció la elección confirmada de la dote.");
+unset($personajeConfirmado["raza"]["confirmada"]);
+comprobarEleccion(eleccionesRazaConfirmadas($personajeConfirmado), "Una elección válida no debe requerir una confirmación adicional.");
 unset($personajeConfirmado["raza"]["elecciones"]["dotes"][0]["elecciones"]["atributos"]);
 comprobarEleccion(!eleccionesRazaConfirmadas($personajeConfirmado), "Una sesión antigua no debe omitir la elección obligatoria.");
 
