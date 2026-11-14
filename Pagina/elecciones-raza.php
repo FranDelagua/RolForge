@@ -1,17 +1,11 @@
 <?php
 
-session_start();
+require_once __DIR__ . "/../Api/autenticacion.php";
+exigirUsuario();
 require_once __DIR__ . "/../Api/elecciones-raza.php";
 require_once __DIR__ . "/selector-ficha.php";
 
-if (!isset($_SESSION["usuario_id"])) {
-    header("Location: login.html");
-    exit;
-}
-if (!isset($_SESSION["personaje_en_creacion"])) {
-    header("Location: crear-personaje.php");
-    exit;
-}
+prepararPersonajeEnCreacion();
 
 $personaje = &$_SESSION["personaje_en_creacion"];
 try {
@@ -23,13 +17,34 @@ try {
 }
 
 $errores = [];
+$mensaje = $_SESSION["mensaje_elecciones_raza"] ?? "";
+unset($_SESSION["mensaje_elecciones_raza"]);
 if ($_SERVER["REQUEST_METHOD"] === "POST" || (!$datos["variantes"] && !$datos["cantidadDotes"])) {
     $resultado = validarEleccionesRaza($datos, $_POST);
     $errores = $resultado["errores"];
     if (!$errores) {
-        $personaje["elecciones_raza"] = $resultado["elecciones"];
-        $personaje["bonificadores_raza"] = $resultado["bonificadores"];
-        $personaje["raza_confirmada"] = $personaje["raza"];
+        $anteriores = $personaje["raza"]["elecciones"]["dotes"] ?? [];
+        $dotes = [];
+        foreach ($resultado["elecciones"]["dotes"] as $posicion => $claveDote) {
+            $dote = referencia5e("feat", $claveDote);
+            $dote["elecciones"] = [];
+            foreach ($anteriores as $anterior) {
+                if (claveReferencia5e($anterior, "feat") === $claveDote) {
+                    $dote["elecciones"] = $anterior["elecciones"] ?? [];
+                    break;
+                }
+            }
+            if ($resultado["elecciones_dotes"][$posicion] !== null) {
+                $dote["elecciones"]["atributos"] = $resultado["elecciones_dotes"][$posicion];
+            } else {
+                unset($dote["elecciones"]["atributos"]);
+            }
+            $dotes[] = $dote;
+        }
+        $resultado["elecciones"]["dotes"] = $dotes;
+        $personaje["raza"]["elecciones"] = $resultado["elecciones"];
+        $personaje["raza"]["bonificadores"] = $resultado["bonificadores"];
+        $personaje["raza"]["confirmada"] = true;
         header("Location: background.php");
         exit;
     }
@@ -39,7 +54,7 @@ $nombresAtributos = [
     "str" => "Fuerza", "dex" => "Destreza", "con" => "Constitución",
     "int" => "Inteligencia", "wis" => "Sabiduría", "cha" => "Carisma"
 ];
-$seleccionAnterior = $personaje["elecciones_raza"] ?? [];
+$seleccionAnterior = $personaje["raza"]["elecciones"] ?? [];
 $reparto = $_POST["reparto"] ?? (string)($seleccionAnterior["reparto"] ?? 0);
 if (!is_string($reparto) || !ctype_digit($reparto) || !isset($datos["variantes"][(int)$reparto])) {
     $reparto = "0";
@@ -48,9 +63,21 @@ $atributosElegidos = $_POST["atributos_raza"] ?? ($seleccionAnterior["atributos"
 if (!is_array($atributosElegidos)) {
     $atributosElegidos = [];
 }
-$dotesElegidas = $_POST["dotes_raza"] ?? ($seleccionAnterior["dotes"] ?? []);
+$dotesAnteriores = array_map(function ($dote) {
+    return claveReferencia5e($dote, "feat");
+}, $seleccionAnterior["dotes"] ?? []);
+$dotesElegidas = $_POST["dotes_raza"] ?? $dotesAnteriores;
 if (!is_array($dotesElegidas)) {
     $dotesElegidas = [];
+}
+$eleccionesDotes = $_POST["dotes_atributos"] ?? [];
+if ($_SERVER["REQUEST_METHOD"] !== "POST") {
+    foreach ($seleccionAnterior["dotes"] ?? [] as $i => $dote) {
+        $eleccionesDotes[$i] = $dote["elecciones"]["atributos"] ?? [];
+    }
+}
+if (!is_array($eleccionesDotes)) {
+    $eleccionesDotes = [];
 }
 $opcionesDotes = [];
 foreach ($datos["dotes"] as $clave => $dote) {
@@ -58,7 +85,8 @@ foreach ($datos["dotes"] as $clave => $dote) {
         "name" => $dote["name"],
         "source" => $dote["source"],
         "descripcion" => primerTexto($dote["entries"] ?? []),
-        "detalles" => []
+        "detalles" => [],
+        "atributos" => variantesAtributosDote($dote)
     ];
 }
 $maximoAtributos = 0;
@@ -91,6 +119,9 @@ foreach ($datos["variantes"] as $variante) {
                 <?php foreach ($errores as $error): ?>
                     <p role="alert"><?= htmlspecialchars($error) ?></p>
                 <?php endforeach; ?>
+                <?php if ($mensaje !== ""): ?>
+                    <p role="alert"><?= htmlspecialchars($mensaje) ?></p>
+                <?php endif; ?>
                 <?php if ($datos["variantes"]): ?>
                     <h2>Bonificaciones de atributos</h2>
                     <?php
@@ -135,9 +166,10 @@ foreach ($datos["variantes"] as $variante) {
                 <?php endif; ?>
                 <?php if ($datos["cantidadDotes"]): ?>
                     <h2>Dote de raza</h2>
-                    <p>La selección es provisional: los requisitos y las elecciones internas de la dote todavía no se validan.</p>
+                    <p>La selección es provisional: los requisitos y otras elecciones internas de la dote todavía no se validan.</p>
                     <?php for ($i = 0; $i < $datos["cantidadDotes"]; $i++): ?>
                         <?php mostrarSelectorFicha("dote-raza-" . $i, "Dote", $opcionesDotes, $dotesElegidas[$i] ?? "", "dotes_raza[]"); ?>
+                        <div data-atributos-dote data-indice="<?= $i ?>" data-seleccion="<?= htmlspecialchars(json_encode($eleccionesDotes[$i] ?? [], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES, "UTF-8") ?>"></div>
                     <?php endfor; ?>
                 <?php endif; ?>
             </section>
@@ -146,6 +178,86 @@ foreach ($datos["variantes"] as $variante) {
     </section>
 </main>
 <script src="../Api/selector-ficha.js"></script>
+<?php if ($datos["cantidadDotes"]): ?>
+<script>
+    const nombresAtributosDote = <?= json_encode($nombresAtributos, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+    document.querySelectorAll("[data-atributos-dote]").forEach(function (contenedor) {
+        const indice = contenedor.dataset.indice;
+        const ficha = document.getElementById("dote-raza-" + indice);
+        const opciones = JSON.parse(ficha.closest("[data-selector-ficha]").querySelector("[data-opciones]").textContent);
+        let seleccion = JSON.parse(contenedor.dataset.seleccion);
+
+        function dibujar() {
+            contenedor.replaceChildren();
+            const dote = opciones[ficha.value];
+            if (!dote || !dote.atributos.length) return;
+            const variantes = dote.atributos;
+            let reparto = Number(seleccion.reparto || 0);
+            if (!Number.isInteger(reparto) || !variantes[reparto]) reparto = 0;
+            const titulo = document.createElement("h3");
+            titulo.textContent = "Mejora de características — " + dote.name;
+            contenedor.appendChild(titulo);
+            if (variantes.length > 1) {
+                const etiqueta = document.createElement("label");
+                etiqueta.textContent = "Reparto ";
+                const selector = document.createElement("select");
+                selector.name = "dotes_atributos[" + indice + "][reparto]";
+                variantes.forEach(function (variante, i) {
+                    const cantidades = Object.values(variante.fijos).concat(variante.incrementos);
+                    selector.add(new Option(cantidades.map(function (cantidad) { return "+" + cantidad; }).join(" / "), String(i)));
+                });
+                selector.value = String(reparto);
+                selector.addEventListener("change", function () {
+                    seleccion = {reparto: selector.value, atributos: []};
+                    dibujar();
+                });
+                etiqueta.appendChild(selector);
+                contenedor.appendChild(etiqueta);
+            }
+            const variante = variantes[reparto];
+            if (variante.nota) {
+                const nota = document.createElement("p");
+                nota.textContent = variante.nota;
+                contenedor.appendChild(nota);
+            }
+            const tabla = document.createElement("table");
+            const encabezado = tabla.createTHead().insertRow();
+            ["Mejora", "Característica"].forEach(function (texto) {
+                const celda = document.createElement("th");
+                celda.scope = "col";
+                celda.textContent = texto;
+                encabezado.appendChild(celda);
+            });
+            const cuerpo = tabla.createTBody();
+            Object.entries(variante.fijos).forEach(function ([atributo, cantidad]) {
+                const fila = cuerpo.insertRow();
+                fila.insertCell().textContent = "+" + cantidad;
+                fila.insertCell().textContent = nombresAtributosDote[atributo];
+            });
+            variante.incrementos.forEach(function (cantidad, i) {
+                const fila = cuerpo.insertRow();
+                fila.insertCell().textContent = "+" + cantidad;
+                const selector = document.createElement("select");
+                selector.name = "dotes_atributos[" + indice + "][atributos][]";
+                selector.required = true;
+                selector.setAttribute("aria-label", "Característica +" + cantidad + " para " + dote.name);
+                selector.add(new Option("Elegir característica", ""));
+                variante.opciones.forEach(function (atributo) {
+                    selector.add(new Option(nombresAtributosDote[atributo], atributo));
+                });
+                selector.value = (seleccion.atributos || [])[i] || "";
+                fila.insertCell().appendChild(selector);
+            });
+            contenedor.appendChild(tabla);
+        }
+        ficha.addEventListener("change", function () {
+            seleccion = {};
+            dibujar();
+        });
+        dibujar();
+    });
+</script>
+<?php endif; ?>
 <?php if (count($datos["variantes"]) > 1): ?>
 <script>
     const variantesRaza = <?= json_encode($datos["variantes"], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;

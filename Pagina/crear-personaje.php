@@ -1,11 +1,9 @@
 <?php
 
-session_start();
+require_once __DIR__ . "/../Api/autenticacion.php";
+exigirUsuario();
 require_once __DIR__ . "/../Api/razas-5etools.php";
-if (!isset($_SESSION["usuario_id"])) {
-    header("Location: login.html");
-    exit;
-}
+require_once __DIR__ . "/../Api/modelo-personaje.php";
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
@@ -20,6 +18,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     if ($raza === "" || $clase === "") {
         die("Debes seleccionar una raza y una clase.");
+    }
+
+    try {
+        $raza = referencia5e("race", $raza);
+        $clase = referencia5e("class", $clase);
+    } catch (InvalidArgumentException $error) {
+        http_response_code(400);
+        die("La raza o la clase seleccionada no es válida.");
     }
 
     if ($metodo !== "puntos" && $metodo !== "personalizado") {
@@ -42,7 +48,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
      * Guardamos temporalmente el personaje
      * mientras seguimos con su creación.
      */
-    $_SESSION["personaje_en_creacion"] = [
+    $personaje = [
         "nombre" => $nombre,
         "nivel" => 1,
         "raza" => $raza,
@@ -50,6 +56,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         "metodo_atributos" => $metodo,
         "atributos" => $atributos
     ];
+    if (isset($_SESSION["personaje_en_creacion"])) {
+        prepararPersonajeEnCreacion();
+        $anterior = $_SESSION["personaje_en_creacion"];
+        if (
+            isset($anterior["raza"], $anterior["clase"]) &&
+            claveReferencia5e($anterior["raza"], "race") === claveReferencia5e($raza, "race") &&
+            claveReferencia5e($anterior["clase"], "class") === claveReferencia5e($clase, "class")
+        ) {
+            $personaje = array_replace($anterior, $personaje, ["raza" => $anterior["raza"], "clase" => $anterior["clase"]]);
+        }
+    }
+    $_SESSION["personaje_en_creacion"] = $personaje;
 
     /*
      * Pasamos al siguiente paso.

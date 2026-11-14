@@ -1,24 +1,18 @@
 <?php
 
-session_start();
-
-if (!isset($_SESSION["usuario_id"])) {
-    header("Location: login.html");
-    exit;
-}
-
+require_once __DIR__ . "/../Api/autenticacion.php";
+exigirUsuario();
+require_once __DIR__ . "/../Api/elecciones-raza.php";
 
 /*
  * Comprobar que existe un personaje en creación
  */
 
-if (!isset($_SESSION["personaje_en_creacion"])) {
-    header("Location: crear-personaje.php");
-    exit;
-}
+prepararPersonajeEnCreacion();
 
 
 $personaje = $_SESSION["personaje_en_creacion"];
+exigirEleccionesRazaConfirmadas($personaje);
 
 ?>
 
@@ -97,14 +91,14 @@ $personaje = $_SESSION["personaje_en_creacion"];
             <p>
                 Raza:
                 <strong>
-                    <?= htmlspecialchars($personaje["raza"]) ?>
+                    <?= htmlspecialchars(claveReferencia5e($personaje["raza"], "race")) ?>
                 </strong>
             </p>
 
             <p>
                 Clase:
                 <strong>
-                    <?= htmlspecialchars($personaje["clase"]) ?>
+                    <?= htmlspecialchars(claveReferencia5e($personaje["clase"], "class")) ?>
                 </strong>
             </p>
 
@@ -112,7 +106,7 @@ $personaje = $_SESSION["personaje_en_creacion"];
                 <p>
                     Background:
                     <strong>
-                        <?= htmlspecialchars($personaje["background"]) ?>
+                        <?= htmlspecialchars(claveReferencia5e($personaje["background"], "background")) ?>
                     </strong>
                 </p>
             <?php endif; ?>
@@ -121,7 +115,7 @@ $personaje = $_SESSION["personaje_en_creacion"];
                 <p>
                     Subclase:
                     <strong>
-                        <?= htmlspecialchars($personaje["subclase"]) ?>
+                        <?= htmlspecialchars(claveReferencia5e($personaje["subclase"], "subclass")) ?>
                     </strong>
                 </p>
             <?php endif; ?>
@@ -139,21 +133,34 @@ $personaje = $_SESSION["personaje_en_creacion"];
                 "fuerza" => "str", "destreza" => "dex", "constitucion" => "con",
                 "inteligencia" => "int", "sabiduria" => "wis", "carisma" => "cha"
             ]; ?>
+            <?php $nombresAtributos = [
+                "str" => "Fuerza", "dex" => "Destreza", "con" => "Constitución",
+                "int" => "Inteligencia", "wis" => "Sabiduría", "cha" => "Carisma"
+            ]; ?>
+            <?php $bonusDotes = [];
+            foreach ($personaje["raza"]["elecciones"]["dotes"] ?? [] as $dote) {
+                foreach ($dote["elecciones"]["atributos"]["bonificadores"] ?? [] as $atributo => $bonus) {
+                    $bonusDotes[$atributo] = ($bonusDotes[$atributo] ?? 0) + $bonus;
+                }
+            } ?>
             <?php foreach ($personaje["atributos"] as $nombre => $valor): ?>
 
                 <p>
                     <?= ucfirst(htmlspecialchars($nombre)) ?>:
                     <strong>
-                        <?= (int)$valor + (int)($personaje["bonificadores_raza"][$clavesAtributos[$nombre] ?? ""] ?? 0) ?>
+                        <?= (int)$valor + (int)($personaje["raza"]["bonificadores"][$clavesAtributos[$nombre] ?? ""] ?? 0) + (int)($bonusDotes[$clavesAtributos[$nombre] ?? ""] ?? 0) ?>
                     </strong>
                 </p>
 
             <?php endforeach; ?>
 
-            <?php if (!empty($personaje["elecciones_raza"]["dotes"])): ?>
+            <?php if (!empty($personaje["raza"]["elecciones"]["dotes"])): ?>
                 <h2>Dotes de raza (provisionales)</h2>
-                <?php foreach ($personaje["elecciones_raza"]["dotes"] as $dote): ?>
-                    <p><?= htmlspecialchars($dote) ?></p>
+                <?php foreach ($personaje["raza"]["elecciones"]["dotes"] as $dote): ?>
+                    <p><?= htmlspecialchars(claveReferencia5e($dote, "feat")) ?></p>
+                    <?php foreach ($dote["elecciones"]["atributos"]["bonificadores"] ?? [] as $atributo => $bonus): ?>
+                        <p><?= htmlspecialchars($nombresAtributos[$atributo] ?? $atributo) ?> +<?= (int)$bonus ?></p>
+                    <?php endforeach; ?>
                 <?php endforeach; ?>
             <?php endif; ?>
 

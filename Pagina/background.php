@@ -1,16 +1,11 @@
 <?php
 
-session_start();
+require_once __DIR__ . "/../Api/autenticacion.php";
+exigirUsuario();
 require_once __DIR__ . "/selector-ficha.php";
+require_once __DIR__ . "/../Api/elecciones-raza.php";
 
-if (!isset($_SESSION["usuario_id"])) {
-    header("Location: login.html");
-    exit;
-}
-if (!isset($_SESSION["personaje_en_creacion"])) {
-    header("Location: crear-personaje.php");
-    exit;
-}
+prepararPersonajeEnCreacion();
 
 $rutaDatos = __DIR__ . "/../data/5etools/";
 $datos = json_decode(file_get_contents($rutaDatos . "backgrounds.json"), true);
@@ -58,20 +53,18 @@ foreach ($datos["background"] as $background) {
 }
 
 $personaje = &$_SESSION["personaje_en_creacion"];
-if (($personaje["raza_confirmada"] ?? null) !== ($personaje["raza"] ?? null) || !isset($personaje["elecciones_raza"])) {
-    header("Location: elecciones-raza.php");
-    exit;
-}
+exigirEleccionesRazaConfirmadas($personaje);
 $error = "";
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $eleccion = $_POST["background"] ?? "";
     if (!is_string($eleccion) || !isset($opciones[$eleccion])) {
         $error = "Selecciona un trasfondo válido.";
     } else {
-        if (($personaje["background"] ?? "") !== $eleccion) {
+        $backgroundAnterior = isset($personaje["background"]) ? claveReferencia5e($personaje["background"], "background") : "";
+        if ($backgroundAnterior !== $eleccion) {
             unset($personaje["subclase"], $personaje["elecciones"], $personaje["feats"]);
+            $personaje["background"] = referencia5e("background", $eleccion);
         }
-        $personaje["background"] = $eleccion;
         header("Location: subclase.php");
         exit;
     }
@@ -91,7 +84,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         <div class="logo">⚔ ROLFORGE ⚔</div>
         <div class="usuario">
             👤 <?= htmlspecialchars($_SESSION["usuario"]) ?>
-            <a href="<?= !empty($personaje["elecciones_raza"]["atributos"]) || !empty($personaje["elecciones_raza"]["dotes"]) ? "elecciones-raza.php" : "crear-personaje.php" ?>">Volver</a>
+            <a href="<?= !empty($personaje["raza"]["elecciones"]["atributos"]) || !empty($personaje["raza"]["elecciones"]["dotes"]) ? "elecciones-raza.php" : "crear-personaje.php" ?>">Volver</a>
         </div>
     </header>
     <section class="formulario-personaje">
@@ -103,7 +96,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 <?php if ($error !== ""): ?>
                     <p role="alert"><?= htmlspecialchars($error) ?></p>
                 <?php endif; ?>
-                <?php mostrarSelectorFicha("background", "Background", $opciones, $personaje["background"] ?? ""); ?>
+                <?php mostrarSelectorFicha("background", "Background", $opciones, isset($personaje["background"]) ? claveReferencia5e($personaje["background"], "background") : ""); ?>
             </section>
             <div class="acciones-creacion"><button type="submit">Continuar →</button></div>
         </form>

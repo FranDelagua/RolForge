@@ -1,81 +1,74 @@
 <?php
 
-require_once "conexion.php";
+require_once __DIR__ . "/autenticacion.php";
+iniciarSesionSegura();
+require_once __DIR__ . "/conexion.php";
 
-
-// Comprobar que el formulario se ha enviado mediante POST
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    die("Método no permitido");
+    http_response_code(405);
+    die("Método no permitido.");
 }
 
-
-// Recoger los datos del formulario
-$usuario = trim($_POST["usuario"] ?? "");
-$email = trim($_POST["email"] ?? "");
+$usuario = $_POST["usuario"] ?? "";
+$email = $_POST["email"] ?? "";
 $password = $_POST["password"] ?? "";
 $confirmar = $_POST["confirmar"] ?? "";
-
-
-// Comprobar que no haya campos vacíos
-if (
-    empty($usuario) ||
-    empty($email) ||
-    empty($password) ||
-    empty($confirmar)
-) {
-    die("Todos los campos son obligatorios");
+if (!is_string($usuario) || !is_string($email) || !is_string($password) || !is_string($confirmar)) {
+    http_response_code(400);
+    die("Los datos del registro no son válidos.");
+}
+$usuario = trim($usuario);
+$email = trim($email);
+if (strlen($usuario) < 3 || strlen($usuario) > 50 || preg_match('/[\x00-\x1F\x7F]/', $usuario)) {
+    http_response_code(400);
+    die("El nombre de usuario debe tener entre 3 y 50 bytes y no contener caracteres de control.");
+}
+if (strlen($email) > 255 || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    http_response_code(400);
+    die("Introduce un correo electrónico válido.");
+}
+if ($password === "" || strlen($password) > 72 || $password !== $confirmar) {
+    http_response_code(400);
+    die("Las contraseñas deben coincidir y contener entre 1 y 72 bytes.");
 }
 
-
-// Comprobar que las contraseñas coinciden
-if ($password !== $confirmar) {
-    die("Las contraseñas no coinciden");
+$comprobar = $conexion->prepare("SELECT id FROM users WHERE username = ?");
+$comprobar->execute([$usuario]);
+if ($comprobar->fetch()) {
+    http_response_code(409);
+    die("Ese nombre de usuario ya está registrado.");
+}
+$comprobar = $conexion->prepare("SELECT id FROM users WHERE email = ?");
+$comprobar->execute([$email]);
+if ($comprobar->fetch()) {
+    http_response_code(409);
+    die("Ese correo ya está registrado.");
 }
 
-
-// Comprobar si el usuario ya existe
-$consulta = $conexion->prepare(
-    "SELECT id FROM usuarios WHERE usuario = ?"
-);
-
-$consulta->execute([$usuario]);
-
-if ($consulta->fetch()) {
-    die("Ese nombre de usuario ya está registrado");
+$passwordHash = password_hash($password, PASSWORD_DEFAULT);
+if ($passwordHash === false) {
+    http_response_code(500);
+    die("No se pudo proteger la contraseña.");
 }
 
-
-// Comprobar si el correo ya existe
-$consulta = $conexion->prepare(
-    "SELECT id FROM usuarios WHERE email = ?"
-);
-
-$consulta->execute([$email]);
-
-if ($consulta->fetch()) {
-    die("Ese correo ya está registrado");
+try {
+    $consulta = $conexion->prepare("INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)");
+    $consulta->execute([$usuario, $email, $passwordHash]);
+} catch (PDOException $error) {
+    if ($error->getCode() === "23000") {
+        http_response_code(409);
+        die("El nombre de usuario o el correo ya están registrados.");
+    }
+    error_log("Error al registrar un usuario: " . $error->getMessage());
+    http_response_code(500);
+    die("No se pudo completar el registro.");
 }
 
-
-// Encriptar la contraseña
-$passwordHash = password_hash(
-    $password,
-    PASSWORD_DEFAULT
-);
-
-
-// Guardar el usuario en la base de datos
-$consulta = $conexion->prepare(
-    "INSERT INTO usuarios (usuario, email, password)
-     VALUES (?, ?, ?)"
-);
-
-$consulta->execute([
-    $usuario,
-    $email,
-    $passwordHash
+autenticarUsuario([
+    "id" => $conexion->lastInsertId(),
+    "username" => $usuario,
+    "email" => $email,
+    "foto_perfil" => null
 ]);
-
-
-// Registro correcto
-echo "Usuario registrado correctamente";
+header("Location: ../Pagina/index.php");
+exit;

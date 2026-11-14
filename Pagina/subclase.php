@@ -1,24 +1,19 @@
 <?php
 
-session_start();
+require_once __DIR__ . "/../Api/autenticacion.php";
+exigirUsuario();
 require_once __DIR__ . "/selector-ficha.php";
+require_once __DIR__ . "/../Api/elecciones-raza.php";
 
-if (!isset($_SESSION["usuario_id"])) {
-    header("Location: login.html");
-    exit;
-}
-
-if (!isset($_SESSION["personaje_en_creacion"])) {
-    header("Location: crear-personaje.php");
-    exit;
-}
+prepararPersonajeEnCreacion();
 
 $personaje = &$_SESSION["personaje_en_creacion"];
+exigirEleccionesRazaConfirmadas($personaje);
 if (!isset($personaje["background"])) {
     header("Location: background.php");
     exit;
 }
-$claveClase = $personaje["clase"] ?? "";
+$claveClase = isset($personaje["clase"]) ? claveReferencia5e($personaje["clase"], "class") : "";
 $nivel = $personaje["nivel"] ?? null;
 
 if (!is_string($claveClase) || !is_int($nivel) || $nivel < 1) {
@@ -119,7 +114,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     if (!is_string($eleccion) || !isset($subclases[$eleccion])) {
         $error = "Selecciona una subclase válida para esta clase.";
     } else {
-        $personaje["subclase"] = $eleccion;
+        if (!isset($personaje["subclase"]) || claveReferencia5e($personaje["subclase"], "subclass") !== $eleccion) {
+            $personaje["subclase"] = referenciaSubclase5e($subclases[$eleccion]);
+        }
         header("Location: crear-subclase.php");
         exit;
     }
@@ -264,7 +261,7 @@ unset($subclase);
                 <?php if ($error !== ""): ?>
                     <p role="alert"><?= htmlspecialchars($error) ?></p>
                 <?php endif; ?>
-                <?php mostrarSelectorFicha("subclase", "Subclase", $subclases, $personaje["subclase"] ?? ""); ?>
+                <?php mostrarSelectorFicha("subclase", "Subclase", $subclases, isset($personaje["subclase"]) ? claveReferencia5e($personaje["subclase"], "subclass") : ""); ?>
             </section>
             <div class="acciones-creacion">
                 <button type="submit">Continuar →</button>

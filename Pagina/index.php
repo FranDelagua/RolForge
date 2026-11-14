@@ -1,11 +1,7 @@
 <?php
 
-session_start();
-
-if (!isset($_SESSION["usuario_id"])) {
-    header("Location: login.html");
-    exit;
-}
+require_once __DIR__ . "/../Api/autenticacion.php";
+exigirUsuario();
 
 $usuario_id = $_SESSION["usuario_id"];
 
@@ -13,30 +9,15 @@ require_once "../Api/conexion.php";
 
 // Obtener los personajes del usuario
 $consulta = $conexion->prepare(
-    "SELECT id, nombre, sistema, datos, publico, fecha_creacion
-     FROM personajes
-     WHERE usuario_id = ?
-     ORDER BY fecha_creacion DESC"
+    "SELECT id, name, level
+     FROM characters
+     WHERE user_id = ?
+     ORDER BY created_at DESC"
 );
 
 $consulta->execute([$usuario_id]);
 
 $personajes = $consulta->fetchAll(PDO::FETCH_ASSOC);
-
-// Procesar los datos JSON de cada personaje
-foreach ($personajes as &$personaje) {
-
-    $datos = json_decode($personaje["datos"], true);
-
-    if (!is_array($datos)) {
-        $datos = [];
-    }
-
-    $personaje["nivel"] = $datos["nivel"] ?? 1;
-    $personaje["icono"] = $datos["icono"] ?? "⚔️";
-}
-
-unset($personaje);
 
 ?>
 
@@ -175,7 +156,7 @@ unset($personaje);
                                 <span>
                                     <?php
                                     echo htmlspecialchars(
-                                        $personaje["icono"]
+                                        "⚔️"
                                     );
                                     ?>
                                 </span>
@@ -188,19 +169,10 @@ unset($personaje);
                                 <h2>
                                     <?php
                                     echo htmlspecialchars(
-                                        $personaje["nombre"]
+                                        $personaje["name"]
                                     );
                                     ?>
                                 </h2>
-
-
-                                <p>
-                                    <?php
-                                    echo htmlspecialchars(
-                                        $personaje["sistema"]
-                                    );
-                                    ?>
-                                </p>
 
 
                                 <span class="nivel-personaje">
@@ -208,7 +180,7 @@ unset($personaje);
                                     Nivel
                                     <?php
                                     echo htmlspecialchars(
-                                        $personaje["nivel"]
+                                        $personaje["level"]
                                     );
                                     ?>
 
@@ -217,9 +189,7 @@ unset($personaje);
 
                                 <div class="acciones-personaje">
 
-                                    <button type="button">
-                                        Ver personaje
-                                    </button>
+                                    <a href="personaje.php?id=<?= (int)$personaje["id"] ?>">Ver personaje</a>
 
                                 </div>
 

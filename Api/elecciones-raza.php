@@ -1,6 +1,55 @@
 <?php
 
 require_once __DIR__ . "/razas-5etools.php";
+require_once __DIR__ . "/modelo-personaje.php";
+
+function variantesAtributosDote($dote) {
+    $atributos = ["str", "dex", "con", "int", "wis", "cha"];
+    $variantes = [];
+    foreach ($dote["ability"] ?? [] as $regla) {
+        if (!is_array($regla)) {
+            throw new RuntimeException("La mejora de atributos de la dote no es válida.");
+        }
+        $fijos = [];
+        foreach ($atributos as $atributo) {
+            if (isset($regla[$atributo])) {
+                if (!is_int($regla[$atributo]) || $regla[$atributo] < 1) {
+                    throw new RuntimeException("La mejora de atributos de la dote no es compatible.");
+                }
+                $fijos[$atributo] = $regla[$atributo];
+            }
+        }
+        $opciones = [];
+        $incrementos = [];
+        $nota = "";
+        if (isset($regla["choose"])) {
+            $elige = $regla["choose"];
+            if (
+                !is_array($elige) || !isset($elige["from"]) || !is_array($elige["from"]) ||
+                !$elige["from"] || array_diff($elige["from"], $atributos) ||
+                !is_int($elige["count"] ?? 1) || ($elige["count"] ?? 1) < 1 ||
+                !is_int($elige["amount"] ?? 1) || ($elige["amount"] ?? 1) < 1
+            ) {
+                throw new RuntimeException("La elección de atributos de la dote no es compatible.");
+            }
+            $opciones = $elige["from"];
+            $incrementos = array_fill(0, $elige["count"] ?? 1, $elige["amount"] ?? 1);
+            $nota = $elige["entry"] ?? "";
+        }
+        $maximo = $regla["max"] ?? 20;
+        if (!is_int($maximo) || $maximo < 1 || !is_string($nota) || (!$fijos && !$incrementos)) {
+            throw new RuntimeException("La mejora de atributos de la dote no es compatible.");
+        }
+        $variantes[] = [
+            "fijos" => $fijos,
+            "opciones" => $opciones,
+            "incrementos" => $incrementos,
+            "maximo" => $maximo,
+            "nota" => $nota
+        ];
+    }
+    return $variantes;
+}
 
 function cargarDatosEleccionesRaza($personaje) {
     $directorio = __DIR__ . "/../data/5etools/";
@@ -9,8 +58,8 @@ function cargarDatosEleccionesRaza($personaje) {
         throw new RuntimeException("No se pudieron leer las razas de 5etools.");
     }
     $razas = resolverCopiasRazas($datos["race"]);
-    $clave = $personaje["raza"] ?? "";
-    if (!is_string($clave) || !isset($razas[$clave])) {
+    $clave = claveReferencia5e($personaje["raza"] ?? "", "race");
+    if (!isset($razas[$clave])) {
         throw new RuntimeException("La raza seleccionada no existe en 5etools.");
     }
     $raza = $razas[$clave];
@@ -127,6 +176,7 @@ function validarEleccionesRaza($datos, $entrada) {
         if (!is_string($indice) || !ctype_digit($indice) || !isset($datos["variantes"][(int)$indice])) {
             return ["errores" => ["Selecciona un reparto de atributos válido."]];
         }
+
         $variante = $datos["variantes"][(int)$indice];
         $seleccion = $entrada["atributos_raza"] ?? [];
         if (!is_array($seleccion) || !array_is_list($seleccion) || count($seleccion) !== count($variante["incrementos"])) {
@@ -157,8 +207,8 @@ function validarEleccionesRaza($datos, $entrada) {
     if ($errores) {
         return ["errores" => $errores];
     }
+    $nombres = ["str" => "fuerza", "dex" => "destreza", "con" => "constitucion", "int" => "inteligencia", "wis" => "sabiduria", "cha" => "carisma"];
     if ($datos["limite"] !== null) {
-        $nombres = ["str" => "fuerza", "dex" => "destreza", "con" => "constitucion", "int" => "inteligencia", "wis" => "sabiduria", "cha" => "carisma"];
         foreach ($bonificadores as $clave => $bonificador) {
             $base = $datos["atributosBase"][$nombres[$clave]] ?? null;
             if ($bonificador && is_numeric($base) && $base + $bonificador > $datos["limite"]) {
@@ -170,9 +220,110 @@ function validarEleccionesRaza($datos, $entrada) {
     if ($errores) {
         return ["errores" => $errores];
     }
+    $eleccionesDotes = [];
+    $bonificadoresAcumulados = $bonificadores;
+    foreach ($dotes as $posicion => $claveDote) {
+        $variantesDote = variantesAtributosDote($datos["dotes"][$claveDote]);
+        if (!$variantesDote) {
+            $eleccionesDotes[] = null;
+            continue;
+        }
+        $entradaDote = $entrada["dotes_atributos"][$posicion] ?? [];
+        $indiceDote = $entradaDote["reparto"] ?? "0";
+        $atributosDote = $entradaDote["atributos"] ?? [];
+        if (!is_string($indiceDote) || !ctype_digit($indiceDote) || !isset($variantesDote[(int)$indiceDote])) {
+            $errores[] = "Selecciona un reparto válido para " . $datos["dotes"][$claveDote]["name"] . ".";
+            continue;
+        }
+        $varianteDote = $variantesDote[(int)$indiceDote];
+        if (
+            !is_array($atributosDote) || !array_is_list($atributosDote) ||
+            count($atributosDote) !== count($varianteDote["incrementos"]) ||
+            count(array_unique($atributosDote, SORT_REGULAR)) !== count($atributosDote)
+        ) {
+            $errores[] = "Selecciona las características requeridas para " . $datos["dotes"][$claveDote]["name"] . ".";
+            continue;
+        }
+        $bonusDote = $varianteDote["fijos"];
+        foreach ($atributosDote as $i => $atributo) {
+            if (!is_string($atributo) || !in_array($atributo, $varianteDote["opciones"], true)) {
+                $errores[] = "Selecciona una característica válida para " . $datos["dotes"][$claveDote]["name"] . ".";
+                continue 2;
+            }
+            $bonusDote[$atributo] = ($bonusDote[$atributo] ?? 0) + $varianteDote["incrementos"][$i];
+        }
+        foreach ($bonusDote as $atributo => $bonus) {
+            $base = $datos["atributosBase"][$nombres[$atributo]] ?? null;
+            if (is_numeric($base) && $base + $bonificadoresAcumulados[$atributo] + $bonus > $varianteDote["maximo"]) {
+                $errores[] = "La mejora de " . $datos["dotes"][$claveDote]["name"] . " no puede superar " . $varianteDote["maximo"] . ".";
+                continue 2;
+            }
+        }
+        foreach ($bonusDote as $atributo => $bonus) {
+            $bonificadoresAcumulados[$atributo] += $bonus;
+        }
+        $eleccionesDotes[] = ["reparto" => (int)$indiceDote, "atributos" => $atributosDote, "bonificadores" => $bonusDote];
+    }
+    if ($errores) {
+        return ["errores" => $errores];
+    }
     return [
         "errores" => [],
         "bonificadores" => $bonificadores,
-        "elecciones" => ["reparto" => (int)$indice, "atributos" => $seleccion, "dotes" => $dotes]
+        "elecciones" => ["reparto" => (int)$indice, "atributos" => $seleccion, "dotes" => $dotes],
+        "elecciones_dotes" => $eleccionesDotes
     ];
+}
+
+function eleccionesRazaConfirmadas($personaje) {
+    $raza = $personaje["raza"] ?? [];
+    if (empty($raza["confirmada"]) || !isset($raza["elecciones"]) || !is_array($raza["elecciones"])) {
+        return false;
+    }
+    $elecciones = $raza["elecciones"];
+    $entrada = [
+        "reparto" => (string)($elecciones["reparto"] ?? 0),
+        "atributos_raza" => $elecciones["atributos"] ?? [],
+        "dotes_raza" => [],
+        "dotes_atributos" => []
+    ];
+    foreach ($elecciones["dotes"] ?? [] as $i => $dote) {
+        $entrada["dotes_raza"][] = claveReferencia5e($dote, "feat");
+        if (isset($dote["elecciones"]["atributos"])) {
+            $atributos = $dote["elecciones"]["atributos"];
+            $entrada["dotes_atributos"][$i] = [
+                "reparto" => (string)($atributos["reparto"] ?? 0),
+                "atributos" => $atributos["atributos"] ?? []
+            ];
+        }
+    }
+    $resultado = validarEleccionesRaza(cargarDatosEleccionesRaza($personaje), $entrada);
+    if ($resultado["errores"] || ($raza["bonificadores"] ?? null) != $resultado["bonificadores"]) {
+        return false;
+    }
+    foreach ($elecciones["dotes"] ?? [] as $i => $dote) {
+        if (($dote["elecciones"]["atributos"] ?? null) != $resultado["elecciones_dotes"][$i]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+function exigirEleccionesRazaConfirmadas($personaje) {
+    try {
+        if (eleccionesRazaConfirmadas($personaje)) {
+            return;
+        }
+    } catch (InvalidArgumentException $error) {
+        error_log($error->getMessage());
+        http_response_code(400);
+        die("Las elecciones guardadas de la raza no son válidas.");
+    } catch (RuntimeException $error) {
+        error_log($error->getMessage());
+        http_response_code(500);
+        die("No se pudieron comprobar las elecciones de la raza.");
+    }
+    $_SESSION["mensaje_elecciones_raza"] = "Revisa las elecciones de raza y de las dotes antes de continuar.";
+    header("Location: elecciones-raza.php");
+    exit;
 }

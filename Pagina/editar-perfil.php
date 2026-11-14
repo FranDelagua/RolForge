@@ -1,11 +1,7 @@
 <?php
 
-session_start();
-
-if (!isset($_SESSION["usuario_id"])) {
-    header("Location: login.html");
-    exit;
-}
+require_once __DIR__ . "/../Api/autenticacion.php";
+exigirUsuario();
 
 require_once "../Api/conexion.php";
 
@@ -38,8 +34,8 @@ if (
 
     $consulta = $conexion->prepare(
         "SELECT id
-         FROM usuarios
-         WHERE usuario = ?
+         FROM users
+         WHERE username = ?
          AND id != ?
          LIMIT 1"
     );
@@ -67,8 +63,8 @@ if (
 // =====================================================
 
 $consulta = $conexion->prepare(
-    "SELECT usuario, email, foto_perfil
-     FROM usuarios
+    "SELECT username AS usuario, email, foto_perfil
+     FROM users
      WHERE id = ?"
 );
 
@@ -98,13 +94,17 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         $error = "El nombre de usuario debe tener al menos 3 caracteres.";
 
+    } elseif (strlen($usuario) > 50 || preg_match('/[\x00-\x1F\x7F]/', $usuario)) {
+
+        $error = "El nombre de usuario no puede superar 50 bytes ni contener caracteres de control.";
+
     } else {
 
         // Comprobar que el usuario no esté ocupado
         $consulta = $conexion->prepare(
             "SELECT id
-             FROM usuarios
-             WHERE usuario = ?
+             FROM users
+             WHERE username = ?
              AND id != ?"
         );
 
@@ -225,29 +225,40 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             if ($error === "") {
 
                 $consulta = $conexion->prepare(
-                    "UPDATE usuarios
-                     SET usuario = ?, foto_perfil = ?
+                    "UPDATE users
+                     SET username = ?, foto_perfil = ?
                      WHERE id = ?"
                 );
 
-                $consulta->execute([
-                    $usuario,
-                    $foto_perfil,
-                    $usuario_id
-                ]);
+                try {
+                    $consulta->execute([
+                        $usuario,
+                        $foto_perfil,
+                        $usuario_id
+                    ]);
+                } catch (PDOException $errorBD) {
+                    if ($errorBD->getCode() === "23000") {
+                        $error = "Ese nombre de usuario ya está ocupado.";
+                    } else {
+                        error_log("Error al actualizar el perfil: " . $errorBD->getMessage());
+                        http_response_code(500);
+                        die("No se pudo actualizar el perfil.");
+                    }
+                }
 
-
-                // Actualizar sesión
-                $_SESSION["usuario"] = $usuario;
-                $_SESSION["foto_perfil"] = $foto_perfil;
+                if ($error === "") {
+                    // Actualizar sesión
+                    $_SESSION["usuario"] = $usuario;
+                    $_SESSION["foto_perfil"] = $foto_perfil;
 
 
                 // Actualizar datos mostrados
-                $usuarioBD["usuario"] = $usuario;
-                $usuarioBD["foto_perfil"] = $foto_perfil;
+                    $usuarioBD["usuario"] = $usuario;
+                    $usuarioBD["foto_perfil"] = $foto_perfil;
 
 
-                $mensaje = "Perfil actualizado correctamente.";
+                    $mensaje = "Perfil actualizado correctamente.";
+                }
             }
         }
     }
