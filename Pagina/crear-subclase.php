@@ -72,7 +72,7 @@ $personaje = $_SESSION["personaje_en_creacion"];
         <h1>Crear personaje</h1>
 
         <p>
-            Datos guardados correctamente
+            Datos guardados temporalmente. Las decisiones adicionales todavía no se han resuelto y el personaje no está finalizado.
         </p>
 
 
@@ -108,6 +108,24 @@ $personaje = $_SESSION["personaje_en_creacion"];
                 </strong>
             </p>
 
+            <?php if (isset($personaje["background"])): ?>
+                <p>
+                    Background:
+                    <strong>
+                        <?= htmlspecialchars($personaje["background"]) ?>
+                    </strong>
+                </p>
+            <?php endif; ?>
+
+            <?php if (isset($personaje["subclase"])): ?>
+                <p>
+                    Subclase:
+                    <strong>
+                        <?= htmlspecialchars($personaje["subclase"]) ?>
+                    </strong>
+                </p>
+            <?php endif; ?>
+
             <p>
                 Método:
                 <strong>
@@ -117,16 +135,27 @@ $personaje = $_SESSION["personaje_en_creacion"];
 
             <h2>Atributos</h2>
 
+            <?php $clavesAtributos = [
+                "fuerza" => "str", "destreza" => "dex", "constitucion" => "con",
+                "inteligencia" => "int", "sabiduria" => "wis", "carisma" => "cha"
+            ]; ?>
             <?php foreach ($personaje["atributos"] as $nombre => $valor): ?>
 
                 <p>
                     <?= ucfirst(htmlspecialchars($nombre)) ?>:
                     <strong>
-                        <?= $valor ?>
+                        <?= (int)$valor + (int)($personaje["bonificadores_raza"][$clavesAtributos[$nombre] ?? ""] ?? 0) ?>
                     </strong>
                 </p>
 
             <?php endforeach; ?>
+
+            <?php if (!empty($personaje["elecciones_raza"]["dotes"])): ?>
+                <h2>Dotes de raza (provisionales)</h2>
+                <?php foreach ($personaje["elecciones_raza"]["dotes"] as $dote): ?>
+                    <p><?= htmlspecialchars($dote) ?></p>
+                <?php endforeach; ?>
+            <?php endif; ?>
 
         </section>
 

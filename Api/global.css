@@ -2819,7 +2819,8 @@ button:hover {
 /* Selector y ficha de raza */
 
 #raza,
-#clase {
+#clase,
+.selector-ficha select {
     color-scheme: dark;
     background:
         linear-gradient(
@@ -2832,7 +2833,8 @@ button:hover {
 }
 
 #raza option,
-#clase option {
+#clase option,
+.selector-ficha select option {
     background: #130d09;
     color: var(--text);
 }

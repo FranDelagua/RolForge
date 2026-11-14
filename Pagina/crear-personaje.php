@@ -1,6 +1,12 @@
 <?php
 
 session_start();
+require_once __DIR__ . "/../Api/razas-5etools.php";
+if (!isset($_SESSION["usuario_id"])) {
+    header("Location: login.html");
+    exit;
+}
+
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     $nombre = trim($_POST["nombre"] ?? "");
@@ -48,11 +54,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     /*
      * Pasamos al siguiente paso.
      */
-    header("Location: crear-subclase.php");
-    exit;
-}
-if (!isset($_SESSION["usuario_id"])) {
-    header("Location: login.html");
+    header("Location: elecciones-raza.php");
     exit;
 }
 
@@ -244,13 +246,13 @@ if (!isset($datosFluffRazas["raceFluff"]) || !is_array($datosFluffRazas["raceFlu
     die("No se pudo leer la información de razas de 5etools.");
 }
 
-$fluffPorRaza = [];
-
-foreach ($datosFluffRazas["raceFluff"] as $fluffRaza) {
-    $nombreFluff = $fluffRaza["name"] ?? "";
-    $sourceFluff = $fluffRaza["source"] ?? "";
-
-    $fluffPorRaza[$nombreFluff . "|" . $sourceFluff] = $fluffRaza;
+try {
+    $razasResueltas = resolverCopiasRazas($razas);
+    $fluffPorRaza = resolverCopiasRazas($datosFluffRazas["raceFluff"]);
+} catch (RuntimeException $error) {
+    error_log($error->getMessage());
+    http_response_code(500);
+    die("No se pudieron resolver los datos heredados de las razas de 5etools.");
 }
 
 $directorioImagenesRazas = realpath(__DIR__ . "/../data/5etools/img");
@@ -260,6 +262,7 @@ foreach ($razas as $raza) {
     $nombreRaza = $raza["name"] ?? "";
     $sourceRaza = $raza["source"] ?? "";
     $claveRaza = $nombreRaza . "|" . $sourceRaza;
+    $raza = $razasResueltas[$claveRaza];
     $fluffRaza = $fluffPorRaza[$claveRaza] ?? [];
     $rutaImagen = null;
 
@@ -293,6 +296,9 @@ foreach ($razas as $raza) {
         "name" => $nombreRaza,
         "source" => $sourceRaza,
         "entries" => $raza["entries"] ?? [],
+        "ability" => $raza["ability"] ?? [],
+        "size" => $raza["size"] ?? [],
+        "sizeEntry" => $raza["sizeEntry"] ?? null,
         "lore" => $fluffRaza["entries"] ?? [],
         "image" => $rutaImagen
     ];
@@ -763,6 +769,65 @@ $atributos = [
             return texto.slice(0, corte > 0 ? corte : limite).trim() + "…";
         }
 
+        function obtenerTextosRasgoRaza(contenido, textos) {
+            if (typeof contenido === "string") {
+                const texto = contenido.replace(
+                    /\{@([a-zA-Z0-9]+)\s+([^}]+)\}/g,
+                    function (_, tipo, contenidoEtiqueta) {
+                        const partes = contenidoEtiqueta.split("|");
+                        return tipo.toLowerCase() === "filter" ? partes[0] : (partes[2] || partes[0]);
+                    }
+                ).replace(/\{@[^}]+\}/g, "").replace(/\s+/g, " ").trim();
+                if (texto) textos.push(texto);
+                return;
+            }
+            if (Array.isArray(contenido)) {
+                contenido.forEach(function (elemento) {
+                    obtenerTextosRasgoRaza(elemento, textos);
+                });
+                return;
+            }
+            if (contenido && typeof contenido === "object") {
+                if ((contenido.type === "item" || contenido.type === "itemSpell") && contenido.name) {
+                    textos.push(contenido.name);
+                }
+                if (contenido.type === "table") {
+                    obtenerTextosRasgoRaza(contenido.colLabels, textos);
+                    obtenerTextosRasgoRaza(contenido.rows, textos);
+                } else {
+                    obtenerTextosRasgoRaza(contenido.entries, textos);
+                    obtenerTextosRasgoRaza(contenido.items, textos);
+                    obtenerTextosRasgoRaza(contenido.entry, textos);
+                    obtenerTextosRasgoRaza(contenido.text, textos);
+                }
+            }
+        }
+
+        function describirAtributosRaza(variantes) {
+            const nombres = {
+                str: "Fuerza", dex: "Destreza", con: "Constitución",
+                int: "Inteligencia", wis: "Sabiduría", cha: "Carisma"
+            };
+            if (!Array.isArray(variantes)) return "";
+            return variantes.map(function (variante) {
+                const partes = Object.keys(nombres).filter(function (clave) {
+                    return typeof variante[clave] === "number";
+                }).map(function (clave) {
+                    const valor = variante[clave];
+                    return nombres[clave] + " " + (valor > 0 ? "+" : "") + valor;
+                });
+                if (variante.choose && Array.isArray(variante.choose.from)) {
+                    const eleccion = variante.choose;
+                    const opciones = eleccion.from.map(function (clave) {
+                        return nombres[clave] || clave;
+                    }).join(", ");
+                    partes.push("Elegir " + (eleccion.count || 1) + " entre " + opciones +
+                        " (+" + (eleccion.amount || 1) + ")");
+                }
+                return partes.join("; ");
+            }).filter(Boolean).join(" / ");
+        }
+
         function actualizarFichaRaza() {
 
             const claveRaza = selectorRaza.value;
@@ -795,40 +860,63 @@ $atributos = [
             }
 
             const rasgos = [];
-            const rasgosGenericos = [
-                "age",
-                "alignment",
-                "size",
-                "language",
-                "languages",
-                "ability score increase"
-            ];
+            const entradas = Array.isArray(informacion.entries) ? informacion.entries : [];
+            const nombresRasgos = entradas.map(function (entrada) {
+                return entrada && typeof entrada.name === "string" ? entrada.name.toLowerCase() : "";
+            });
+            const atributosRaza = describirAtributosRaza(informacion.ability);
+            if (atributosRaza && !nombresRasgos.includes("ability score increase") &&
+                !nombresRasgos.includes("ability score improvement")) {
+                rasgos.push({ nombre: "Atributos", descripcion: atributosRaza });
+            }
+            if (!nombresRasgos.includes("size")) {
+                const textosTamano = [];
+                obtenerTextosRasgoRaza(informacion.sizeEntry && informacion.sizeEntry.entries, textosTamano);
+                if (textosTamano.length === 0 && Array.isArray(informacion.size)) {
+                    const tamanos = { T: "Diminuto", S: "Pequeño", M: "Mediano", L: "Grande", H: "Enorme", G: "Gargantuesco", V: "Variable" };
+                    informacion.size.forEach(function (tamano) {
+                        if (tamanos[tamano]) textosTamano.push(tamanos[tamano]);
+                    });
+                }
+                if (textosTamano.length) {
+                    rasgos.push({ nombre: "Tamaño", descripcion: textosTamano.join(" / ") });
+                }
+            }
 
-            if (Array.isArray(informacion.entries)) {
-                informacion.entries.forEach(function (entrada) {
+            if (entradas.length) {
+                entradas.forEach(function (entrada) {
+                    if (typeof entrada === "string") {
+                        const textos = [];
+                        obtenerTextosRasgoRaza(entrada, textos);
+                        if (textos.length) {
+                            rasgos.push({ nombre: "Información", descripcion: textos.join(" ") });
+                        }
+                        return;
+                    }
                     if (
                         !entrada ||
                         typeof entrada !== "object" ||
-                        typeof entrada.name !== "string" ||
-                        rasgosGenericos.includes(entrada.name.toLowerCase())
+                        typeof entrada.name !== "string"
                     ) {
                         return;
                     }
 
                     const textosRasgo = [];
-                    obtenerTextos(entrada.entries, textosRasgo);
+                    obtenerTextosRasgoRaza(entrada.entries || entrada.entry || entrada.items, textosRasgo);
 
-                    rasgos.push({
-                        nombre: entrada.name,
-                        descripcion: resumirTextoRaza(textosRasgo.join(" "), 150)
-                    });
+                    if (textosRasgo.length) {
+                        rasgos.push({
+                            nombre: entrada.name,
+                            descripcion: textosRasgo.join(" ")
+                        });
+                    }
                 });
             }
 
             const listaRasgos = rasgosFichaRaza.querySelector("ul");
             listaRasgos.replaceChildren();
 
-            rasgos.slice(0, 4).forEach(function (rasgo) {
+            rasgos.forEach(function (rasgo) {
                 const elemento = document.createElement("li");
                 const nombre = document.createElement("strong");
 
@@ -1258,7 +1346,8 @@ $atributos = [
                 raza;
 
             document.getElementById("clase-hidden").value =
-                indiceClase;
+                clases[Number(indiceClase)].name + "|" +
+                (clases[Number(indiceClase)].source || "");
 
             document.getElementById("metodo-hidden").value =
                 metodo;
