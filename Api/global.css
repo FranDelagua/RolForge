@@ -3010,8 +3010,14 @@ button:hover {
 .ficha-elemento { margin: 1rem 0; padding-bottom: .8rem; border-bottom: 1px solid var(--input-border); }
 .ficha-personaje summary { cursor: pointer; color: var(--gold-light); }
 .acciones-creacion { gap: .75rem; }
+.cabecera-ficha-personaje { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; margin-bottom: 1.5rem; }
+.cabecera-ficha-personaje > div > p { color: var(--text-muted); margin: .35rem 0 0; text-align: left; }
+.cabecera-ficha-personaje > div > .clase-ficha-personaje { color: var(--gold-light); font-weight: bold; }
+.boton-subir-nivel { display: inline-block; flex: 0 0 auto; padding: 12px 20px; border: 1px solid var(--gold-dark); border-radius: 3px; background: linear-gradient(180deg, #76521f, #412a11); color: #f1dfae; text-align: center; }
+.boton-subir-nivel:hover { border-color: var(--gold-light); background: linear-gradient(180deg, #946d30, #593a17); color: #fff0c1; }
 @media (max-width: 700px) {
     .selector-multiple-columnas, .ficha-habilidades { grid-template-columns: 1fr; }
     .ficha-atributos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .acciones-creacion { flex-wrap: wrap; }
+    .cabecera-ficha-personaje { align-items: flex-start; flex-direction: column; }
 }

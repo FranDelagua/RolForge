@@ -126,8 +126,15 @@ foreach ($datos["elecciones"] as $eleccion) {
         <div class="usuario">👤 <?= textoPersonaje($_SESSION["usuario"]) ?> <a href="index.php">Mis personajes</a></div>
     </header>
     <div class="formulario-personaje ficha-personaje">
-        <h1><?= textoPersonaje($personaje["name"]) ?></h1>
-        <p>Nivel <?= (int)$personaje["level"] ?><?= isset($identidad["class"]) ? " · " . textoPersonaje($identidad["class"]["entity_name"]) : "" ?></p>
+        <div class="cabecera-ficha-personaje">
+            <div>
+                <h1><?= textoPersonaje($personaje["name"]) ?></h1>
+            <p>Nivel <?= (int)$personaje["level"] ?><?= isset($identidad["class"]) ? " · " . textoPersonaje($identidad["class"]["entity_name"]) : "" ?></p>
+            </div>
+            <?php if ((int)$personaje["level"] < 20): ?>
+                <a class="boton-subir-nivel" href="subidaNivel.php?id=<?= (int)$personaje["id"] ?>">Subir de nivel</a>
+            <?php endif; ?>
+        </div>
         <section class="seccion-creacion">
             <h2>Identidad</h2>
             <div class="ficha-rejilla">
