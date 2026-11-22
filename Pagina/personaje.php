@@ -134,6 +134,10 @@ foreach ($datos["elecciones"] as $eleccion) {
             <?php if ((int)$personaje["level"] < 20): ?>
                 <a class="boton-subir-nivel" href="subidaNivel.php?id=<?= (int)$personaje["id"] ?>">Subir de nivel</a>
             <?php endif; ?>
+                <a class="boton-exportar"
+        href="../Api/exportar-personaje.php?id=<?= (int)$personaje["id"] ?>">
+        Exportar
+    </a>
         </div>
         <section class="seccion-creacion">
             <h2>Identidad</h2>
