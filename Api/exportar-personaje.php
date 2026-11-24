@@ -116,11 +116,20 @@ $lineas[] = "";
 
 $lineas[] = "DATOS PRINCIPALES";
 $lineas[] = "-----------------";
+$camposOcultos = [
+    "id",
+    "user_id",
+    "created_at",
+    "updated_at"
+];
 
 foreach ($personaje as $campo => $valor) {
-    $lineas[] = $campo . ": " . (string)$valor;
-}
+    if (in_array($campo, $camposOcultos, true)) {
+        continue;
+    }
 
+    $lineas[] = $campo . ": " . (string) $valor;
+}
 $lineas[] = "";
 
 
@@ -168,7 +177,7 @@ foreach ($datos as $grupo => $filas) {
                 }
             }
 
-            $lineas[] = "  " . $campo . ": " . (string)$valor;
+            $lineas[] = "  " . $campo . ": " . (string) $valor;
         }
     }
 }
