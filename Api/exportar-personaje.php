@@ -5,6 +5,13 @@ exigirUsuario();
 
 require_once __DIR__ . "/conexion.php";
 
+
+/*
+ * ============================================
+ * 1. OBTENER ID DEL PERSONAJE
+ * ============================================
+ */
+
 $id = filter_input(
     INPUT_GET,
     "id",
@@ -17,11 +24,16 @@ if (!$id) {
     die("Personaje no encontrado.");
 }
 
+
 /*
- * Comprobar que el personaje pertenece al usuario actual
+ * ============================================
+ * 2. COMPROBAR QUE PERTENECE AL USUARIO
+ * ============================================
  */
+
 $consulta = $conexion->prepare(
-    "SELECT * FROM characters
+    "SELECT *
+     FROM characters
      WHERE id = ? AND user_id = ?"
 );
 
@@ -39,64 +51,97 @@ if (!$personaje) {
 
 
 /*
- * Obtener todos los datos relacionados
+ * ============================================
+ * 3. OBTENER DATOS RELACIONADOS
+ * ============================================
  */
+
 $consultas = [
 
-    "entidades" => "
-        SELECT entity_type, entity_name, source, source_id
+    "entities" => "
+        SELECT
+            entity_type,
+            entity_name,
+            source,
+            source_id
         FROM character_entities
         WHERE character_id = ?
         ORDER BY id
     ",
 
-    "elecciones" => "
-        SELECT source_type, source_id, choice_key,
-               value, value_source, value_source_id
+    "choices" => "
+        SELECT
+            source_type,
+            source_id,
+            choice_key,
+            value,
+            value_source,
+            value_source_id
         FROM character_choices
         WHERE character_id = ?
         ORDER BY id
     ",
 
-    "habilidades" => "
-        SELECT skill, proficient, expertise, bonus
+    "skills" => "
+        SELECT
+            skill,
+            proficient,
+            expertise,
+            bonus
         FROM character_skills
         WHERE character_id = ?
         ORDER BY id
     ",
 
-    "competencias" => "
-        SELECT proficiency_type, name, source, source_id
+    "proficiencies" => "
+        SELECT
+            proficiency_type,
+            name,
+            source,
+            source_id
         FROM character_proficiencies
         WHERE character_id = ?
         ORDER BY id
     ",
 
-    "conjuros" => "
-        SELECT name, source, source_id, prepared
+    "spells" => "
+        SELECT
+            name,
+            source,
+            source_id,
+            prepared
         FROM character_spells
         WHERE character_id = ?
         ORDER BY id
     ",
 
-    "objetos" => "
-        SELECT name, source, source_id, quantity, equipped
+    "items" => "
+        SELECT
+            name,
+            source,
+            source_id,
+            quantity,
+            equipped
         FROM character_items
         WHERE character_id = ?
         ORDER BY id
     ",
 
-    "adicionales" => "
-        SELECT data_key, data
+    "additional_data" => "
+        SELECT
+            data_key,
+            data
         FROM character_data
         WHERE character_id = ?
         ORDER BY id
     "
 ];
 
+
 $datos = [];
 
 foreach ($consultas as $nombre => $sql) {
+
     $consulta = $conexion->prepare($sql);
     $consulta->execute([$id]);
 
@@ -105,17 +150,13 @@ foreach ($consultas as $nombre => $sql) {
 
 
 /*
- * Construir el TXT
+ * ============================================
+ * 4. LIMPIAR DATOS DEL PERSONAJE
+ * ============================================
+ *
+ * No exportamos datos internos de la BD.
  */
-$lineas = [];
 
-$lineas[] = "========================================";
-$lineas[] = "           ROLFORGE - PERSONAJE";
-$lineas[] = "========================================";
-$lineas[] = "";
-
-$lineas[] = "DATOS PRINCIPALES";
-$lineas[] = "-----------------";
 $camposOcultos = [
     "id",
     "user_id",
@@ -123,86 +164,188 @@ $camposOcultos = [
     "updated_at"
 ];
 
+$character = [];
+
 foreach ($personaje as $campo => $valor) {
+
     if (in_array($campo, $camposOcultos, true)) {
         continue;
     }
 
-    $lineas[] = $campo . ": " . (string) $valor;
-}
-$lineas[] = "";
+    /*
+     * Intentar convertir automáticamente valores
+     * JSON almacenados en la BD.
+     */
+    if (is_string($valor)) {
 
+        $json = json_decode($valor, true);
 
-/*
- * Datos relacionados
- */
-$nombres = [
-    "entidades" => "ENTIDADES",
-    "elecciones" => "ELECCIONES",
-    "habilidades" => "HABILIDADES",
-    "competencias" => "COMPETENCIAS",
-    "conjuros" => "CONJUROS",
-    "objetos" => "INVENTARIO",
-    "adicionales" => "DATOS ADICIONALES"
-];
-
-foreach ($datos as $grupo => $filas) {
-
-    $lineas[] = "";
-    $lineas[] = $nombres[$grupo] ?? strtoupper($grupo);
-    $lineas[] = str_repeat("-", 40);
-
-    if (!$filas) {
-        $lineas[] = "(Sin datos)";
-        continue;
-    }
-
-    foreach ($filas as $numero => $fila) {
-
-        $lineas[] = "";
-        $lineas[] = "Entrada " . ($numero + 1);
-
-        foreach ($fila as $campo => $valor) {
-
-            // Si el valor contiene JSON, intentamos mostrarlo de forma legible
-            if ($campo === "data") {
-                $json = json_decode($valor, true);
-
-                if ($json !== null) {
-                    $valor = json_encode(
-                        $json,
-                        JSON_PRETTY_PRINT |
-                        JSON_UNESCAPED_UNICODE
-                    );
-                }
-            }
-
-            $lineas[] = "  " . $campo . ": " . (string) $valor;
+        if (
+            json_last_error() === JSON_ERROR_NONE &&
+            is_array($json)
+        ) {
+            $valor = $json;
         }
     }
-}
 
-$contenido = implode(PHP_EOL, $lineas);
+    $character[$campo] = $valor;
+}
 
 
 /*
- * Descargar archivo
+ * ============================================
+ * 5. PROCESAR DATOS ADICIONALES
+ * ============================================
  */
+
+$additionalData = [];
+
+foreach ($datos["additional_data"] as $fila) {
+
+    $valor = $fila["data"];
+
+    /*
+     * Si "data" contiene JSON válido,
+     * lo guardamos como objeto/array real.
+     */
+    $json = json_decode($valor, true);
+
+    if (json_last_error() === JSON_ERROR_NONE) {
+        $valor = $json;
+    }
+
+    $additionalData[$fila["data_key"]] = $valor;
+}
+
+
+/*
+ * ============================================
+ * 6. CONSTRUIR ROLFORGE JSON
+ * ============================================
+ */
+
+$exportacion = [
+
+    /*
+     * Identificación del formato
+     */
+    "format" => "RolForge-JSON",
+
+    "version" => "1.0",
+
+    "target" => "foundry-vtt",
+
+
+    /*
+     * Datos principales
+     */
+    "character" => $character,
+
+
+    /*
+     * Entidades:
+     *
+     * Clase
+     * Subclase
+     * Especie
+     * Background
+     * Feats
+     * Features
+     * etc.
+     */
+    "entities" => $datos["entities"],
+
+
+    /*
+     * Elecciones realizadas por el jugador.
+     */
+    "choices" => $datos["choices"],
+
+
+    /*
+     * Habilidades.
+     */
+    "skills" => $datos["skills"],
+
+
+    /*
+     * Competencias.
+     */
+    "proficiencies" => $datos["proficiencies"],
+
+
+    /*
+     * Hechizos.
+     */
+    "spells" => $datos["spells"],
+
+
+    /*
+     * Inventario.
+     */
+    "items" => $datos["items"],
+
+
+    /*
+     * Información adicional.
+     *
+     * Aquí podemos guardar cualquier información
+     * que no encaje en las estructuras anteriores.
+     */
+    "additional_data" => $additionalData
+];
+
+
+/*
+ * ============================================
+ * 7. GENERAR JSON
+ * ============================================
+ */
+
+$json = json_encode(
+    $exportacion,
+    JSON_PRETTY_PRINT |
+    JSON_UNESCAPED_UNICODE |
+    JSON_UNESCAPED_SLASHES
+);
+
+if ($json === false) {
+    http_response_code(500);
+    die("No se pudo generar el JSON.");
+}
+
+
+/*
+ * ============================================
+ * 8. NOMBRE DEL ARCHIVO
+ * ============================================
+ */
+
 $nombrePersonaje = preg_replace(
     '/[^a-zA-Z0-9_-]/',
     '_',
-    $personaje["name"]
+    $personaje["name"] ?? "personaje"
 );
 
-$nombreArchivo = "personaje_" . $nombrePersonaje . ".txt";
+$nombreArchivo = "personaje_" . $nombrePersonaje . ".json";
 
-header("Content-Type: text/plain; charset=UTF-8");
+
+/*
+ * ============================================
+ * 9. DESCARGAR
+ * ============================================
+ */
+
+header("Content-Type: application/json; charset=UTF-8");
+
 header(
     'Content-Disposition: attachment; filename="' .
     $nombreArchivo .
     '"'
 );
-header("Content-Length: " . strlen($contenido));
 
-echo $contenido;
+header("Content-Length: " . strlen($json));
+
+echo $json;
+
 exit;
